@@ -1979,6 +1979,39 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     renderCars();
     hideSplash();
 
+    // Deep-link support: a URL opened directly with one of the app's own
+    // section hashes (e.g. shared as .../index.html#sklad, or the bare
+    // https://hilljx21-cpu.github.io/trt/#skaner link) should land on that
+    // screen immediately — not on Главная with the hash just sitting unused
+    // in the address bar. Each showXScreen() below is already fully
+    // self-contained (renders its own content).
+    try{
+      var initialHash = (location.hash || '').replace('#', '');
+      var deepLinkScreens = {
+        obrabotka: showProcessingScreen,
+        sklad: showWarehouseScreen,
+        skaner: showScannerScreen,
+        viktorina: showQuizScreen
+      };
+      if(deepLinkScreens[initialHash]){
+        // Give the "Назад" button something safe inside the app to land on.
+        // Without this, history.back() from a screen reached via a direct
+        // deep-link (no app-pushed "cars" entry before it) is free to walk
+        // out of the app entirely — to whatever page was open in this same
+        // browser tab before this link was opened/pasted — instead of
+        // landing on Главная like every other "Назад" button does. Replacing
+        // the very first entry with {view:'cars'} before pushing the
+        // deep-linked screen on top (pushHistory=true) mirrors exactly what
+        // a normal in-app visit (Cars, then click a nav button) would have
+        // produced, so the existing popstate handler's
+        // `if(!e.state || e.state.view==='cars') showCarsScreen()` branch
+        // handles the back-navigation exactly as it already does everywhere
+        // else — no new code path, no special-casing.
+        try{ history.replaceState({view:'cars'}, '', location.pathname); }catch(e){}
+        deepLinkScreens[initialHash](true);
+      }
+    }catch(e){}
+
     // Durable restore from the artifact's own db (see claudeDbPromise above),
     // in case localStorage above was empty for this browser/session even
     // though an update was saved before — e.g. site data was cleared, this
