@@ -1033,31 +1033,32 @@
      now-bigger label. */
   .menu-tile-icon--scan-anim{background:none; width:123.2px; height:123.2px; position:relative;}
   .menu-tile-icon--scan-anim svg{width:136px; height:136px; overflow:visible;}
-  .scan-beam{animation:scanBeamSweep 7s ease-in-out infinite; filter:drop-shadow(0 0 2.2px rgba(255,59,48,.85));}
-  .scan-gun{animation:scanGunBounce 7s ease-in-out infinite;}
-  .scan-confirm{animation:scanConfirmFlash 7s ease-in-out infinite;}
+  /* v124: total loop shortened 7s -> 4s, cutting exactly 3s of trailing
+     idle/pause time ("паузу анимации стикера уменьшай -3 сек");
+     every keyframe % below is the OLD % times 1.75 (7s/4s), which keeps
+     the sweep/bounce/confirm segments at their exact previous real-time
+     speed and shrinks only the dead time after the confirm flash (was
+     51% of 7s = 3.57s idle, now 14.25% of 4s = 0.57s idle). */
+  .scan-beam{animation:scanBeamSweep 4s ease-in-out infinite; filter:drop-shadow(0 0 2.2px rgba(255,59,48,.85));}
+  .scan-gun{animation:scanGunBounce 4s ease-in-out infinite;}
+  .scan-confirm{animation:scanConfirmFlash 4s ease-in-out infinite;}
   @keyframes scanBeamSweep{
     0%{opacity:0; transform:translateX(0);}
-    6%{opacity:1; transform:translateX(0);}
-    /* sweep sped up again, this time explicitly "в 2 раза" (2x) versus the
-       immediately preceding pass: that pass covered the full width in 30%
-       of the 7s cycle (6%->36%, ~2.1s); this halves that span to 15%
-       (6%->21%, ~1.05s). Still only the sweep itself is faster -- the
-       overall 7s loop length is unchanged, same as the previous request. */
-    21%{opacity:1; transform:translateX(46px);}
-    25%{opacity:0; transform:translateX(46px);}
+    10.5%{opacity:1; transform:translateX(0);}
+    36.75%{opacity:1; transform:translateX(46px);}
+    43.75%{opacity:0; transform:translateX(46px);}
     100%{opacity:0; transform:translateX(0);}
   }
   @keyframes scanGunBounce{
     0%{transform:translate(55px,28px);}
-    6%{transform:translate(55px,26.5px);}
-    10%{transform:translate(55px,28px);}
-    21%{transform:translate(55px,26.5px);}
-    25%{transform:translate(55px,28px);}
+    10.5%{transform:translate(55px,26.5px);}
+    17.5%{transform:translate(55px,28px);}
+    36.75%{transform:translate(55px,26.5px);}
+    43.75%{transform:translate(55px,28px);}
     100%{transform:translate(55px,28px);}
   }
   @keyframes scanConfirmFlash{
-    0%{opacity:0;} 25%{opacity:0;} 29%{opacity:1;} 43%{opacity:1;} 49%{opacity:0;} 100%{opacity:0;}
+    0%{opacity:0;} 43.75%{opacity:0;} 50.75%{opacity:1;} 75.25%{opacity:1;} 85.75%{opacity:0;} 100%{opacity:0;}
   }
   @media (prefers-reduced-motion: reduce){
     .scan-beam{animation:none!important; opacity:0!important;}
@@ -1623,7 +1624,7 @@
   --scn-laser:#ff5a4f; --scn-ok:#5fd09a; --scn-ok-bg:#183428; --scn-bad-bg:#3a1d1b; --scn-warn:#f0bf4c; --scn-warn-bg:#3a3018; --scn-chip:#252d2b; color-scheme:dark}}:root[data-theme="dark"]{
   --scn-bg:#121615; --scn-panel:#1b2120; --scn-ink:#e8ecea; --scn-muted:#94a19e; --scn-line:#2d3533;
   --scn-laser:#ff5a4f; --scn-ok:#5fd09a; --scn-ok-bg:#183428; --scn-bad-bg:#3a1d1b; --scn-warn:#f0bf4c; --scn-warn-bg:#3a3018; --scn-chip:#252d2b; color-scheme:dark}#screenScanner *{box-sizing:border-box}#screenScanner [hidden]{display:none!important}#screenScanner{background:var(--scn-bg);color:var(--scn-ink);font-family:var(--scn-font-body);font-size:15px;line-height:1.5;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 32px}#screenScanner .wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:18px}#screenScanner header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 20px}#screenScanner h1{font-family:var(--scn-font-display);font-weight:700;font-size:clamp(22px,3.4vw,30px);letter-spacing:-.01em;margin:0;text-wrap:balance}#screenScanner h1 span{color:var(--scn-laser)}#screenScanner .sub{color:var(--scn-muted);margin:0;font-size:14px}#screenScanner .grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:18px;align-items:start}
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 32px}#screenScanner .wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:18px}#screenScanner header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 20px}#screenScanner h1{font-family:var(--scn-font-display);font-weight:800;font-size:clamp(24px,3.8vw,32px);letter-spacing:-.015em;line-height:1.12;margin:0;text-wrap:balance}#screenScanner h1 span{color:var(--scn-laser);font-weight:800}#screenScanner .sub{color:var(--scn-muted);margin:0;font-size:14px}#screenScanner .grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:18px;align-items:start}
 @media (max-width:860px){#screenScanner .grid{grid-template-columns:1fr}}
 @media (max-width:560px){#screenScanner{padding-block:12px 24px;font-size:15px}#screenScanner .wrap{gap:12px}#screenScanner .panel{padding:12px;gap:12px;border-radius:8px}#screenScanner .basebar{padding:8px 12px;font-size:12.5px}#screenScanner .card{padding:12px}#screenScanner .art{font-size:24px}#screenScanner .oem-chip{font-size:13px;padding:4px 8px}#screenScanner .onec-norm{white-space:normal}#screenScanner ul.hist{max-height:none}#screenScanner .btn{padding:10px 12px}
 }
@@ -1633,6 +1634,13 @@
 @media (prefers-reduced-motion:reduce){#screenScanner .laser{animation:none}}#screenScanner .vp-msg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px;text-align:center;color:#d9e0dd;font-size:14px}#screenScanner .vp-msg strong{font-family:var(--scn-font-display);font-weight:500;font-size:16px;color:#fff}#screenScanner .vp-msg.done{justify-content:flex-end;padding-bottom:18px;background:linear-gradient(transparent 55%,rgb(0 0 0/.55))}#screenScanner .btn.big{padding:12px 20px;font-size:15px}#screenScanner .flash{position:absolute;inset:0;border:4px solid var(--scn-ok);border-radius:8px;opacity:0;pointer-events:none;transition:opacity .15s}#screenScanner .flash.on{opacity:1}#screenScanner .drop{border:2px dashed var(--scn-line);border-radius:8px;padding:22px 16px;text-align:center;color:var(--scn-muted);cursor:pointer;display:flex;flex-direction:column;gap:6px;align-items:center}#screenScanner .drop.over{border-color:var(--scn-laser);color:var(--scn-ink)}#screenScanner .drop strong{color:var(--scn-ink);font-weight:600}#screenScanner .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}#screenScanner .btn{border:1px solid var(--scn-line);background:var(--scn-panel);color:var(--scn-ink);font:600 14px var(--scn-font-body);padding:9px 14px;border-radius:7px;cursor:pointer}#screenScanner .btn.primary{background:var(--scn-ink);color:var(--scn-panel);border-color:var(--scn-ink)}#screenScanner .btn:disabled{opacity:.5;cursor:default}#screenScanner select.btn{font-weight:500;max-width:100%}#screenScanner label.chk{display:flex;gap:6px;align-items:center;color:var(--scn-muted);font-size:14px;cursor:pointer}#screenScanner .result{border-radius:8px;padding:14px;background:var(--scn-ok-bg);display:flex;flex-direction:column;gap:6px;min-width:0}#screenScanner .result .val{font-family:var(--scn-font-mono);font-size:17px;font-weight:600;word-break:break-all}#screenScanner .result.empty{background:var(--scn-chip);color:var(--scn-muted)}#screenScanner .fmt{display:inline-block;font:600 11px var(--scn-font-mono);letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:4px;background:var(--scn-chip);color:var(--scn-muted)}#screenScanner .result .fmt{background:var(--scn-panel);color:var(--scn-ok)}#screenScanner .status{font-size:13px;color:var(--scn-muted);min-height:1.2em}#screenScanner .status.err{color:var(--scn-laser)}#screenScanner .hist-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}#screenScanner h2{font-family:var(--scn-font-display);font-weight:500;font-size:16px;margin:0}#screenScanner h2 small{font-family:var(--scn-font-mono);font-size:13px;color:var(--scn-muted);font-weight:400;margin-left:6px}#screenScanner ul.hist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;max-height:560px;overflow:auto}#screenScanner ul.hist li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:11px 2px;border-top:1px solid var(--scn-line)}#screenScanner ul.hist li:first-child{border-top:0}#screenScanner .h-val{font-family:var(--scn-font-mono);font-size:14px;word-break:break-all;min-width:0}#screenScanner .h-val a{color:inherit}#screenScanner .h-meta{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--scn-muted);font-variant-numeric:tabular-nums;grid-column:1}#screenScanner .h-act{grid-column:2;grid-row:1/3;display:flex;gap:4px;align-items:center}#screenScanner .icon-btn{border:1px solid var(--scn-line);background:transparent;color:var(--scn-muted);font:500 12px var(--scn-font-body);padding:5px 8px;border-radius:6px;cursor:pointer}#screenScanner .icon-btn:hover{color:var(--scn-ink)}#screenScanner .example{font-size:11px;color:var(--scn-laser);font-weight:600;text-transform:uppercase;letter-spacing:.06em}#screenScanner .empty-hist{color:var(--scn-muted);font-size:14px;padding:12px 0}#screenScanner .basebar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;font-size:13px;color:var(--scn-muted);background:var(--scn-panel);border:1px solid var(--scn-line);border-radius:10px;padding:10px 14px}#screenScanner .basebar b{color:var(--scn-ink);font-weight:600;font-variant-numeric:tabular-nums}#screenScanner .basebar .spacer{flex:1}#screenScanner .search{position:relative}#screenScanner .search input{width:100%;font:500 15px var(--scn-font-body);padding:10px 12px;border:1px solid var(--scn-line);border-radius:7px;background:var(--scn-panel);color:var(--scn-ink)}#screenScanner .search input:focus-visible{outline:2px solid var(--scn-laser);outline-offset:1px}#screenScanner .sugg{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:5;background:var(--scn-panel);border:1px solid var(--scn-line);border-radius:8px;box-shadow:0 8px 24px rgb(0 0 0/.14);max-height:320px;overflow:auto;list-style:none;margin:0;padding:4px}#screenScanner .sugg li{padding:8px 10px;border-radius:6px;cursor:pointer;display:flex;flex-direction:column;gap:2px}#screenScanner .sugg li:hover, #screenScanner .sugg li.act{background:var(--scn-chip)}#screenScanner .sugg .s-name{font-size:14px}#screenScanner .sugg .s-meta{font:12px var(--scn-font-mono);color:var(--scn-muted)}#screenScanner .card{border-radius:8px;padding:16px;background:var(--scn-ok-bg);display:flex;flex-direction:column;gap:12px;min-width:0}#screenScanner .card.miss{background:color-mix(in srgb,var(--scn-laser) 12%,var(--scn-panel))}#screenScanner .card-top{display:flex;gap:8px;align-items:center;flex-wrap:wrap}#screenScanner .badge{font:600 12px var(--scn-font-body);padding:3px 9px;border-radius:999px;background:var(--scn-ok);color:var(--scn-panel)}#screenScanner .miss .badge{background:var(--scn-laser)}#screenScanner .card h3{font-family:var(--scn-font-display);font-weight:500;font-size:clamp(17px,2.2vw,20px);line-height:1.3;margin:0;text-wrap:balance}#screenScanner .art{font:700 clamp(22px,3vw,28px) var(--scn-font-mono);letter-spacing:.02em}#screenScanner dl.fields{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:6px 16px;margin:0;font-size:14px}#screenScanner dl.fields dt{color:var(--scn-muted)}#screenScanner dl.fields dd{margin:0;font-weight:500;word-break:break-word}#screenScanner dl.fields dd.mono{font-family:var(--scn-font-mono);font-size:clamp(17px,2.2vw,20px);font-weight:700;letter-spacing:.02em}#screenScanner dl.fields dd.mono small{font-size:13px;font-weight:500;color:var(--scn-muted);margin-left:6px;letter-spacing:0}#screenScanner .pk{display:flex;flex-direction:column;gap:6px}#screenScanner .pk-title{font-size:12px;color:var(--scn-muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600}#screenScanner .pk-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:8px 10px;border-radius:6px;background:var(--scn-panel);font-size:13.5px;cursor:pointer;border:1px solid transparent;text-align:left;color:var(--scn-ink);font-family:var(--scn-font-body)}#screenScanner .pk-row.cur{border-color:var(--scn-ok);background:var(--scn-ok-bg)}#screenScanner .pk-row .mono{font-family:var(--scn-font-mono);color:var(--scn-muted);font-size:12.5px}#screenScanner .pk-row .pk-code{font-family:var(--scn-font-mono);font-size:16px;font-weight:700;color:var(--scn-ink);letter-spacing:.02em}#screenScanner .h-name{font-size:13px;color:var(--scn-ink);grid-column:1}#screenScanner .h-miss{font-size:12px;color:var(--scn-laser);font-weight:600}#screenScanner .oem{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:6px;background:var(--scn-panel)}#screenScanner .oem-list{display:flex;flex-wrap:wrap;gap:6px}#screenScanner .oem-chip{font:600 14px var(--scn-font-mono);padding:5px 10px;border-radius:5px;border:1px solid var(--scn-line);background:var(--scn-bg);color:var(--scn-ink);cursor:pointer}#screenScanner .oem-chip:hover{border-color:var(--scn-ok)}#screenScanner .oem-chip:focus-visible{outline:2px solid var(--scn-laser);outline-offset:2px}#screenScanner .oem-sub{font:600 12px var(--scn-font-mono);color:var(--scn-muted)}#screenScanner .oem-x{font:12.5px var(--scn-font-mono);color:var(--scn-muted);word-break:break-word}#screenScanner .oem-none{font-size:13px;color:var(--scn-muted)}#screenScanner .onec{display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:6px;background:var(--scn-panel);border:2px solid var(--scn-line)}#screenScanner .onec.ok{border-color:var(--scn-ok)}#screenScanner .onec.bad{border-color:var(--scn-laser)}#screenScanner .onec-head{display:flex;align-items:center;gap:8px}#screenScanner .onec-ico{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font:700 13px var(--scn-font-body);color:var(--scn-panel);background:var(--scn-muted)}#screenScanner .onec.ok .onec-ico{background:var(--scn-ok)}#screenScanner .onec.bad .onec-ico{background:var(--scn-laser)}#screenScanner .onec-reason{font-size:13px;color:var(--scn-muted)}#screenScanner .onec-row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 12px;padding:7px 10px;border-radius:5px;font-size:13.5px;border-left:4px solid}#screenScanner .onec-row.good{border-color:var(--scn-warn);background:var(--scn-warn-bg)}#screenScanner .onec-row.good.cur{border-color:var(--scn-ok);background:var(--scn-ok-bg)}#screenScanner .onec-row.bad{border-color:var(--scn-laser);background:var(--scn-bad-bg)}#screenScanner .onec-row.cur{font-weight:600}#screenScanner .onec-name{min-width:0;word-break:break-word}#screenScanner .onec-norm{font:12.5px var(--scn-font-mono);white-space:nowrap}#screenScanner .onec-row.good .onec-norm{color:var(--scn-warn)}#screenScanner .onec-row.good.cur .onec-norm{color:var(--scn-ok)}#screenScanner .onec-row.bad .onec-norm{color:var(--scn-laser)}#screenScanner .popup{position:fixed;inset:0;display:grid;place-items:center;z-index:50;pointer-events:none;background:rgb(0 0 0/.25);padding:16px}#screenScanner .pop-box{background:var(--scn-panel);border-radius:14px;padding:26px 28px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;max-width:420px;box-shadow:0 20px 50px rgb(0 0 0/.3);border:3px solid var(--scn-line);animation:scnPop .18s ease-out}#screenScanner .popup.ok .pop-box{border-color:var(--scn-ok)}#screenScanner .popup.bad .pop-box{border-color:var(--scn-laser)}#screenScanner .pop-ico{width:78px;height:78px;border-radius:50%;display:grid;place-items:center;font:700 44px var(--scn-font-body);color:#fff;background:var(--scn-muted)}#screenScanner .popup.ok .pop-ico{background:var(--scn-ok)}#screenScanner .popup.bad .pop-ico{background:var(--scn-laser)}#screenScanner .pop-title{font:600 19px var(--scn-font-display)}#screenScanner .pop-code{font:700 17px var(--scn-font-mono);letter-spacing:.02em;word-break:break-all}#screenScanner .pop-reason{font-size:14px;color:var(--scn-muted)}
 @keyframes scnPop{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){#screenScanner .pop-box{animation:none}}#screenScanner .formats{font-size:12px;color:var(--scn-muted);line-height:1.6}#screenScanner .formats code{font-family:var(--scn-font-mono);font-size:11.5px}
+/* Small brand mark next to the Scanner screen's own title -- this merged
+   third-party "Сканер стикеров" tool otherwise carries no TRT branding on
+   this full screen (the Home-tile preview icon did, but even that had its
+   small "TRT" tag removed in v116 to avoid crowding the sticker artwork).
+   Per explicit request to put a TRT mark on this screen/category. */
+#screenScanner h1{display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;}
+#screenScanner .scn-trt-badge{display:inline-flex;align-items:center;font-family:var(--scn-font-mono);font-size:12.5px;font-weight:800;letter-spacing:.06em;color:#fff;background:linear-gradient(135deg,#ff5b4d,var(--scn-laser));border-radius:999px;padding:3px 11px;line-height:1.5;vertical-align:middle;box-shadow:0 2px 6px rgba(209,2,2,.35);}
 
 </style>
 
@@ -2096,6 +2104,14 @@
       <div class="quiz-stage-list" id="trainingStageList"></div>
     </div>
 
+    <div class="training-level-view" id="trainingLevelView" hidden>
+      <div class="quiz-stage-list" id="trainingLevelList"></div>
+    </div>
+
+    <div class="training-level-view" id="trainingChapterView" hidden>
+      <div class="quiz-stage-list" id="trainingChapterList"></div>
+    </div>
+
     <div class="training-lesson-view" id="trainingLessonView" hidden>
       <div class="quiz-progress-wrap">
         <div class="quiz-progress-text">
@@ -2104,6 +2120,7 @@
         <div class="quiz-progress-track"><div class="quiz-progress-fill training-progress-fill" id="trainingLessonProgressFill" style="width:0%"></div></div>
       </div>
       <div class="training-lesson-card" id="trainingLessonCard">
+        <img id="trainingLessonPhoto" alt="" hidden style="display:block;max-width:100%;max-height:220px;object-fit:contain;margin:0 auto 12px;border-radius:12px;">
         <div class="training-lesson-heading" id="trainingLessonHeading"></div>
         <div class="training-lesson-body" id="trainingLessonBody"></div>
       </div>
@@ -2123,6 +2140,7 @@
         <div class="quiz-progress-track"><div class="quiz-progress-fill training-progress-fill" id="trainingCheckProgressFill" style="width:0%"></div></div>
       </div>
       <div class="quiz-question-card">
+        <img class="quiz-question-photo" id="trainingCheckQuestionPhoto" alt="" hidden>
         <div class="quiz-question-text" id="trainingCheckQuestionText"></div>
       </div>
       <div class="quiz-options" id="trainingCheckOptionsList"></div>
@@ -2156,6 +2174,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
       </button>
       <h1>Сканер <span>штрих</span>&#8209;кодов и QR</h1>
+      <span class="scn-trt-badge" aria-hidden="true">TRT</span>
     </div>
     <p class="sub">Сканируйте стикер — товар из GS1, OEM-коды и сверка нормы упаковки с 1С</p>
   </header>
@@ -2811,6 +2830,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       trainingPrevBtn:'Назад', trainingNextBtn:'Далее', trainingToQuestionsBtn:'К вопросам',
       trainingFinishBtn:'Завершить', trainingRetryBtn:'Повторить', trainingToStagesBtn:'К этапам',
       trainingStageHint:'Выбери этап и пройди обучение по шагам.',
+      trainingLevelsHint:'Выбери вводный курс или категорию товаров.',
+      trainingChaptersHint:'Выбери часть урока — 10-15 карточек и мини-тест.',
+      trainingIntroCourse:'Вводный курс',
       trainingMsgGreat:'Отлично! Материал усвоен уверенно.',
       trainingMsgOk:'Неплохо — пару моментов стоит повторить.',
       trainingMsgRetry:'Стоит повторить этот этап ещё раз.'
@@ -2885,6 +2907,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       trainingPrevBtn:'Back', trainingNextBtn:'Next', trainingToQuestionsBtn:'To questions',
       trainingFinishBtn:'Finish', trainingRetryBtn:'Repeat', trainingToStagesBtn:'To stages',
       trainingStageHint:'Pick a stage and go through the training step by step.',
+      trainingLevelsHint:'Pick the intro course or a product category.',
+      trainingChaptersHint:'Pick a lesson part — 10-15 cards and a short quiz.',
+      trainingIntroCourse:'Intro course',
       trainingMsgGreat:'Great! The material is well understood.',
       trainingMsgOk:'Not bad — a couple of points are worth reviewing.',
       trainingMsgRetry:'It’s worth going through this stage again.'
@@ -2946,6 +2971,310 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     }
   }catch(e){ console.error('Training data parse failed', e); }
 
+  // v125: по прямой просьбе пользователя — убираем деление по уровням
+  // сложности (1-3), оно требовало пройти до 300 карточек за один подход
+  // ("это долго"). Теперь Обучение организовано по ТИПАМ ТОВАРОВ
+  // (категориям), а внутри каждой категории материал режется на короткие
+  // "уроки"(главы) по 10-15 карточек с собственным мини-тестом из 5-8
+  // вопросов — вместо одного гигантского теста на весь уровень. Тот же
+  // принцип применён к этапам "Производство" и "Мастер" (единый список
+  // категорий, т.к. все три этапа ссылаются на один каталог деталей TRT
+  // через partsById) — это решает и жалобу "в Мастер так и осталься
+  // уровни как вопрос и ответ", так как Мастер теперь получает те же
+  // категории/главы, что и остальные этапы.
+  var TRAINING_CATEGORIES_BY_STAGE = {};
+  var TRT_CATEGORY_DEFS = [
+    {key:'arm', titleRu:'Рычаг подвески', titleEn:'Control arm'},
+    {key:'ball', titleRu:'Шаровая опора', titleEn:'Ball joint'},
+    {key:'tierod_end', titleRu:'Наконечник рулевой тяги', titleEn:'Tie rod end'},
+    {key:'hub', titleRu:'Ступицы', titleEn:'Hubs'},
+    {key:'stabilizer', titleRu:'Стабилизаторы', titleEn:'Stabilizers'},
+    {key:'tierod_joint', titleRu:'Рулевая тяга — шарнир', titleEn:'Steering rod joint'},
+    {key:'rubber', titleRu:'Резиновые изделия (RP)', titleEn:'Rubber parts (RP)'},
+    {key:'other', titleRu:'Товары и другие вопросы', titleEn:'Other products & questions'}
+  ];
+  var TRT_CHAPTER_SIZE = 13;
+  var TRT_CHAPTER_QUIZ_MIN = 5;
+  var TRT_CHAPTER_QUIZ_MAX = 8;
+  var TRT_LESSON_CAP = 300;
+  var TRT_STUDY_TIPS = [
+    'Запомни пару «название + код» — на складе это самое важное.',
+    'Коды деталей TRT стоит сверять по месту (L/R) и индексу (-01/-50).',
+    'Эти параметры реально встречаются в заказах — выучи их наизусть.',
+    'Если сомневаешься — свериться можно в «Марки и модели» или через Сканер.'
+  ];
+  function trtQuestionDifficulty(q){
+    var score = 1;
+    if(q.qtype==='img_opts' || q.qtype==='img_q') score += 2;
+    if(q.options && q.options.length > 4) score += 1;
+    if(q.q && q.q.length > 60) score += 1;
+    return score;
+  }
+  function trtSampleArr(arr, k){
+    var copy = arr.slice();
+    for(var i=copy.length-1;i>0;i--){
+      var j = Math.floor(Math.random()*(i+1));
+      var tmp = copy[i]; copy[i]=copy[j]; copy[j]=tmp;
+    }
+    return copy.slice(0, Math.min(k, copy.length));
+  }
+  function trtExtractPartMention(text){
+    if(!text) return null;
+    var m = text.match(/«([^»]+)»\s*\(?\s*([A-Za-zА-Яа-я0-9][A-Za-zА-Яа-я0-9\-\.]{1,})\s*\)?/);
+    if(m) return { name: m[1].trim(), id: m[2].trim() };
+    m = text.match(/^(.+?)\s*\(\s*([A-Za-zА-Яа-я0-9][A-Za-zА-Яа-я0-9\-\.]{1,})\s*\)\s*$/);
+    if(m) return { name: m[1].trim(), id: m[2].trim() };
+    return null;
+  }
+  // v125-фикс: простая проверка indexOf('вес') ложно срабатывала на слове
+  // "подвеска"/"подвески" (которое буквально содержит "вес" как подстроку),
+  // из-за чего ВСЕ вопросы о деталях подвески (т.е. ровно категория
+  // "Рычаг подвески R9000") схлопывались в одну карточку при дедупликации.
+  // trtHasWord проверяет границы слова (соседние символы не кириллица/
+  // латиница), так что "вес" само по себе матчится, а "подвески" — нет.
+  function trtHasWord(s, word){
+    var idx = s.indexOf(word);
+    while(idx > -1){
+      var before = idx>0 ? s.charAt(idx-1) : '';
+      var after = (idx+word.length < s.length) ? s.charAt(idx+word.length) : '';
+      if(!/[a-zа-яё]/i.test(before) && !/[a-zа-яё]/i.test(after)) return true;
+      idx = s.indexOf(word, idx+1);
+    }
+    return false;
+  }
+  function trtAttributeLabel(qClean){
+    var s = (qClean || '').toLowerCase();
+    if(trtHasWord(s, 'вес')) return 'Вес';
+    if(s.indexOf('oem') > -1) return 'OEM-код';
+    if(s.indexOf('упаков') > -1 || s.indexOf('норм') > -1) return 'Норма упаковки';
+    if(s.indexOf('подходит') > -1 || s.indexOf('применим') > -1) return 'Применимость';
+    if(s.indexOf('цвет') > -1) return 'Цвет';
+    if(s.indexOf('материал') > -1) return 'Материал';
+    return '';
+  }
+  function trtAttributeValue(label, qClean, correctText){
+    if(label === 'Применимость'){
+      var m = qClean.match(/(?:подходит\s+(?:на|для|к)|применим[а-я]*\s+(?:на|для|к))\s+(.+)$/i);
+      return m ? m[1] : qClean;
+    }
+    if(label === 'OEM-код'){
+      // v126-фикс: раньше захватывалось ЛЮБОЕ слово после "OEM-код" (3+
+      // символов), включая случайные слова самого вопроса ("детали",
+      // "этой", "соответствует"...), что давало мусорные карточки. Код
+      // детали почти всегда содержит цифру — требуем её в захвате.
+      var m2 = qClean.match(/OEM[-\s]?код[а-я]*\s+([A-Za-zА-Яа-я0-9\-\.]{3,})/i);
+      if(m2 && /\d/.test(m2[1])) return m2[1];
+      return correctText;
+    }
+    return correctText;
+  }
+  // v126-фикс: часть вопросов в банке Тестов — не "назови факт", а бинарная
+  // сверка ("Соответствует ли OEM-код детали ... каталожному номеру?"), и
+  // правильный ответ на них — просто "Соответствует"/"Да"/"Верно" и т.п., без
+  // реального значения атрибута. trtAttributeLabel() всё равно распознаёт
+  // ключевое слово (OEM/вес/...) в тексте вопроса и помечает его как факт —
+  // из-за этого карточка показывала бессмысленное "OEM-код: Соответствует"
+  // вместо полноценного материала. Если извлечённое "значение" — один из
+  // этих общих да/нет-ответов, атрибутную метку не используем вовсе и
+  // показываем карточку как обычный факт на основе всего текста вопроса.
+  var TRT_GENERIC_ANSWERS = ['да','нет','соответствует','не соответствует','верно','неверно','правильно','неправильно','подходит','не подходит','совпадает','не совпадает','согласен','не согласен','yes','no','true','false'];
+  function trtIsGenericAnswer(text){
+    var t = (text || '').trim().toLowerCase().replace(/[.!]+$/, '');
+    return TRT_GENERIC_ANSWERS.indexOf(t) > -1;
+  }
+  // Классификатор "деталь -> категория товара" для нового деления Обучения.
+  // Сначала смотрим префикс кода (R9/R8/R7/RP — однозначные семейства TRT),
+  // затем, если код не дал ответа, смотрим ключевые слова в названии.
+  function trtCategorizePart(name, code){
+    var c = (code || '').toUpperCase();
+    var n = (name || '').toLowerCase();
+    if(/^R9/.test(c)) return 'arm';
+    if(/^R8/.test(c)) return 'ball';
+    if(/^R7/.test(c)) return 'tierod_end';
+    if(/^RP/.test(c)) return 'rubber';
+    if(n.indexOf('ступиц') > -1) return 'hub';
+    if(n.indexOf('стабилизат') > -1) return 'stabilizer';
+    if(n.indexOf('наконечник') > -1 && n.indexOf('рулев') > -1) return 'tierod_end';
+    if(n.indexOf('рулев') > -1) return 'tierod_joint';
+    if(n.indexOf('шаров') > -1) return 'ball';
+    if(n.indexOf('рычаг') > -1) return 'arm';
+    if(n.indexOf('резин') > -1) return 'rubber';
+    return 'other';
+  }
+  // v128-фикс: объекты из partsById хранят название в nameRu/nameEn (см. trName() выше по файлу), а НЕ в плоском .name — поэтому
+  // correctPart.name / imgSubjectPart.name ниже всегда были undefined для
+  // ЛЮБОГО img_opts/img_q вопроса. mention.name оказывался пустым,
+  // trtQuestionToLessonCard уходил в запасной режим и показывал СЫРОЙ текст
+  // вопроса целиком вместо полноценного факта (ровно жалоба «как
+  // вопрос идут уровни» — заголовок карточки буквально повторял вопрос,
+  // хотя атрибут/значение внизу карточки уже считались верно). Нормализуем в
+  // {name,id,photo} через trName(), прежде чем использовать как mention.
+  function trtMentionOf(p){
+    return p ? { name: trName(p), id: p.id, photo: p.photo } : null;
+  }
+  function trtQuestionToLessonCard(q){
+    var imgSubjectPartRaw = (q.qtype==='img_q' && q.img) ? partsById[q.img] : null;
+    var correctPartRaw = null, correctText = '';
+    try{
+      if(q.qtype==='img_opts'){
+        correctPartRaw = partsById[q.options[q.correct]];
+        correctText = correctPartRaw ? trName(correctPartRaw) : (q.options[q.correct] || '');
+      } else {
+        correctText = (q.options && q.options[q.correct]) || '';
+      }
+    }catch(e){}
+    var imgSubjectPart = trtMentionOf(imgSubjectPartRaw);
+    var correctPart = trtMentionOf(correctPartRaw);
+    var qClean = (q.q || '').replace(/\?+\s*$/, '').trim();
+    var mention = imgSubjectPart || correctPart || trtExtractPartMention(q.q) || trtExtractPartMention(correctText);
+    var photo = (imgSubjectPart && imgSubjectPart.photo) || (correctPart && correctPart.photo) || '';
+    if(!photo && mention && mention.id && partsById[mention.id] && partsById[mention.id].photo){
+      photo = partsById[mention.id].photo;
+    }
+    var label = trtAttributeLabel(qClean);
+    var attrValue = label ? trtAttributeValue(label, qClean, correctText) : '';
+    if(label && trtIsGenericAnswer(attrValue)){
+      // The question's "answer" is just a yes/no/matches-style word, not a
+      // real attribute value -- fall back to showing the full question as
+      // the fact instead of a hollow "Label: Да" card.
+      label = '';
+    }
+    var heading, bodyLines = [];
+    if(mention && mention.name){
+      heading = mention.name;
+      bodyLines.push('«'+mention.name+'»' + (mention.id ? ' '+mention.id : ''));
+      if(label){
+        bodyLines.push(label + ': ' + (attrValue || '—'));
+      } else if(correctText && correctText.trim().toLowerCase() !== mention.name.trim().toLowerCase()){
+        bodyLines.push(qClean + ' — ' + correctText);
+      } else {
+        bodyLines.push(qClean);
+      }
+    } else {
+      heading = (q.q && q.q.length > 50) ? (q.q.slice(0,50)+'…') : (q.q || '');
+      if(label){
+        bodyLines.push(label + ': ' + (attrValue || '—'));
+      } else {
+        bodyLines.push(qClean + (correctText ? (' — ' + correctText) : ''));
+      }
+    }
+    var dedupeSubject = (mention && (mention.id || mention.name)) ? (mention.id || mention.name) : qClean;
+    var dedupeKey = (dedupeSubject||'').toLowerCase() + '|' + (label || ('fact:' + qClean.toLowerCase()));
+    return {
+      heading: heading,
+      body: bodyLines.join('\n'),
+      tip: trtSampleArr(TRT_STUDY_TIPS, 1)[0] || '',
+      photo: photo,
+      dedupeKey: dedupeKey,
+      partName: (mention && mention.name) || '',
+      partCode: (mention && mention.id) || ''
+    };
+  }
+  // Строит категории товаров и внутри каждой — короткие главы (10-15
+  // карточек) со своим мини-тестом (5-8 вопросов), вместо единого уровня
+  // на 300 карточек. Применяется одинаково к Товарам/Производству/Мастеру.
+  function trtBuildTrainingCategories(){
+    ['products','production','master'].forEach(function(stageKey){
+      try{
+        var tStage = (TRAINING_DATA.stages||[]).filter(function(s){ return s.key===stageKey; })[0];
+        var qStage = (QUIZ_DATA.stages||[]).filter(function(s){ return s.key===stageKey; })[0];
+        if(!tStage || !qStage) return;
+        var seenSubj = {};
+        var byCat = {};
+        TRT_CATEGORY_DEFS.forEach(function(def){ byCat[def.key] = []; });
+        (qStage.tests||[]).forEach(function(test){
+          (test.questions||[]).forEach(function(q){
+            if(!q || !q.q) return;
+            try{
+              var card = trtQuestionToLessonCard(q);
+              if(!card.body) return;
+              if(seenSubj[card.dedupeKey]) return;
+              seenSubj[card.dedupeKey] = true;
+              var catKey = trtCategorizePart(card.partName, card.partCode) || 'other';
+              if(!byCat[catKey]) byCat[catKey] = [];
+              byCat[catKey].push({ q: q, card: card });
+            }catch(e){ console.error('Training card build failed for one question', e); }
+          });
+        });
+        var cats = [];
+        TRT_CATEGORY_DEFS.forEach(function(def){
+          var items = (byCat[def.key] || []).slice(0, TRT_LESSON_CAP);
+          if(!items.length) return;
+          var chapters = [];
+          for(var i=0;i<items.length;i+=TRT_CHAPTER_SIZE){
+            var slice = items.slice(i, i+TRT_CHAPTER_SIZE);
+            var chapNum = chapters.length+1;
+            var quizSize = TRT_CHAPTER_QUIZ_MIN + Math.floor(Math.random()*(TRT_CHAPTER_QUIZ_MAX-TRT_CHAPTER_QUIZ_MIN+1));
+            chapters.push({
+              key: stageKey + '__' + def.key + '__ch' + chapNum,
+              title: def.titleRu + ' — Часть ' + chapNum,
+              titleEn: def.titleEn + ' — Part ' + chapNum,
+              lessons: slice.map(function(item){ return item.card; }),
+              questions: trtSampleArr(slice.map(function(item){ return item.q; }), quizSize),
+              mentorIntro: tStage.mentorIntro || ''
+            });
+          }
+          cats.push({
+            key: stageKey + '__' + def.key,
+            title: def.titleRu,
+            titleEn: def.titleEn,
+            count: items.length,
+            chapters: chapters
+          });
+        });
+        TRAINING_CATEGORIES_BY_STAGE[stageKey] = cats;
+      }catch(e){ console.error('Training categories build failed for stage', stageKey, e); }
+    });
+  }
+
+  // Supplementary lesson content per stage -- the ORIGINAL embedded
+  // TRAINING_DATA JSON (the <script id="trt-training-data"> payload parsed
+  // above) already has 4-10 lesson cards per stage; this is appended on
+  // top (never replacing anything already there), per explicit request to
+  // lengthen every stage ("обучение очень короткая"). Keyed by the same 5
+  // stage keys as Тесты (intro/concepts/products/production/master).
+  // Content drawn from TRT's own published company facts (2026 factsheet),
+  // kept consistent with each stage's existing subject matter.
+  var TRAINING_LESSONS_EXTRA = {
+    intro: [
+      {heading:'Кто мы', body:'TRT (Technologies of Real Time) — совместное предприятие Узбекистана и Кореи, основано в 2015 году в Ташкенте; производство запущено в 2016-м. TRT — официальный OE-поставщик конвейера UzAuto Motors (GM): например, рычаг TRT R9003 ставится на Damas/Labo по оригинальному номеру 96612064.', tip:'Если деталь стоит на конвейере — это аргумент в разговоре с клиентом ещё до вторичного рынка.'},
+      {heading:'Сертификация', body:'Завод TRT сертифицирован по IATF 16949:2016 — тому же международному стандарту качества автокомпонентов, которому следуют OE-поставщики мировых автоконцернов. TRT также отмечен как национальный бренд Узбекистана.', tip:'Сертификат IATF — весомый аргумент при разговоре с оптовым клиентом.'},
+      {heading:'География продаж', body:'Продукцию TRT покупают в 7 странах: Узбекистан (42%), Россия (18,5%), Украина (14%), Казахстан (11,5%), Таджикистан (7%), Кыргызстан (4%), Туркменистан (3%) — почти 58% продаж уходит на экспорт.', tip:'Если спросят про экспорт — цифры теперь под рукой.'},
+      {heading:'На выставках', body:'С 2018 по 2024 год TRT участвовал в Automechanika и MIMS 15 раз — в Москве, Франкфурте, Дубае и Шанхае, представляя продукцию международным байерам.', tip:'Участие в крупных выставках — знак того, что бренд растёт.'}
+    ],
+    concepts: [
+      {heading:'Из чего делают детали TRT', body:'Сырьё закупается у проверенных поставщиков: сталь — у TOPCO Global (Корея), ММК, «Северстали» и завода им. Серова; резинотехнические компоненты — у DuPont (США), PHG и UZDONGJU (Корея).', tip:'Качество детали начинается с качества сырья.'},
+      {heading:'3D-сканирование эталона', body:'Перед запуском новой детали в производство инженеры TRT делают 3D-скан оригинального образца — так геометрия совпадает с OEM с точностью до долей миллиметра.', tip:'Поэтому детали TRT так точно садятся на штатные места.'},
+      {heading:'Два вида штамповки', body:'В производстве применяют и горячую штамповку при 1050°C (для прочных силовых деталей), и холодную — выбор зависит от типа детали и нужных свойств металла.', tip:'Выбор штамповки — инженерный расчёт, а не случайность.'},
+      {heading:'Катафорезное покрытие', body:'Каждая металлическая деталь проходит катафорезную окраску краской UZDONGJU в течение 1,5 часов — равномерное антикоррозийное покрытие по всей поверхности, включая внутренние полости.', tip:'Коррозия — главный враг детали, катафорез — её главная защита.'}
+    ],
+    products: [
+      {heading:'Ассортимент TRT', body:'В каталоге TRT 1259 артикулов: 285 наконечников рулевых тяг, 270 шаровых опор, 255 стоек стабилизатора, 191 рулевая тяга, 138 сайлентблоков/втулок, 55 ступиц, 50 рычагов, 15 опор амортизаторов.', tip:'Эти цифры удобно держать в голове при разговоре с клиентом.'},
+      {heading:'22 марки авто', body:'TRT выпускает запчасти для 22 марок: от Chevrolet и Daewoo (с 2016 года) до BMW, VW, Mercedes, Audi, Lexus, Toyota, Nissan, Honda, Mitsubishi, Hyundai, Kia, Isuzu, Opel, Ravon, Škoda, Peugeot, Citroën, BYD, Chery и Changan.', tip:'Чем шире охват марок — тем универсальнее каталог.'},
+      {heading:'Собственный цех РТИ', body:'Резинотехнические изделия (пыльники, втулки) TRT производит сам, на отдельной линии RP — это полный цикл внутри одного завода, а не аутсорс.', tip:'Меньше зависимости от сторонних поставщиков — стабильнее поставки.'},
+      {heading:'Испытано прочностью', body:'В тесте журнала «За рулём» шаровая опора TRT (палец 25 мм) выдержала вырыв 4180 кгс и выдавливание 5100 кгс — при норме 1500/2100 кгс: лучший результат по выдавливанию среди участников теста.', tip:'Цифры теста — весомый аргумент в пользу надёжности.'}
+    ],
+    production: [
+      {heading:'Полный цикл — на одном заводе', body:'Путь детали: 3D-скан эталона → входной контроль сырья → резка → штамповка (горячая 1050°C или холодная) → дробеструй и закалка в туннельной печи → обработка на ЧПУ HAAS (США).', tip:'Каждый этап проверяют, прежде чем деталь идёт дальше по линии.'},
+      {heading:'Сварка и покраска', body:'После механической обработки детали сваривают сварочные роботы Panasonic, затем — катафорезная покраска UZDONGJU (1,5 часа) для защиты от коррозии.', tip:'Сварка и покраска — два разных, но одинаково важных этапа.'},
+      {heading:'Финальная сборка и контроль', body:'Завершающий этап — сборка, маркировка и обязательный контроль ОТК каждой партии перед отгрузкой.', tip:'ОТК — последний барьер перед тем, как деталь уедет к клиенту.'},
+      {heading:'Собственное оборудование', body:'Ключевые станки — ЧПУ HAAS (США) для точной механообработки и сварочные роботы Panasonic — тот же класс оборудования, что у OE-поставщиков мировых автоконцернов.', tip:'Хорошее оборудование — тоже часть качества.'}
+    ],
+    master: [
+      {heading:'Проверка по фото — последний шаг', body:'Даже если артикул и OEM совпали, всегда сверяйте деталь по фото в каталоге — пыльники и сайлентблоки разных поколений одной модели могут визуально отличаться при схожих кодах.', tip:'Фото — самый быстрый способ не ошибиться.'},
+      {heading:'Когда использовать Сканер', body:'Если на упаковке есть штрихкод или QR — используйте раздел «Сканер»: он сверит код с базой GS1 и нормой упаковки по 1С быстрее, чем ручной поиск по артикулу.', tip:'Сканер экономит время при больших партиях.'},
+      {heading:'L и R — не путать', body:'Суффиксы L (left/левый) и R (right/правый) в артикуле указывают сторону установки — перепутанная деталь физически может подойти, но крепёжные отверстия и углы окажутся смещены.', tip:'Маленькая буква — большая разница в посадке.'},
+      {heading:'Суффиксы -01 и -50', body:'Цифровой суффикс после основного номера (например, -01, -50) обычно обозначает ревизию конструкции или модификацию под конкретный подвариант модели — при сомнении сверяйтесь по фото и OEM, а не только по похожему номеру.', tip:'Суффикс — не шум, а важная часть номера.'}
+    ]
+  };
+  try{
+    (TRAINING_DATA.stages||[]).forEach(function(stage){
+      var extra = TRAINING_LESSONS_EXTRA[stage.key];
+      if(!extra || !extra.length) return;
+      stage.lessons = (stage.lessons||[]).concat(extra);
+    });
+  }catch(e){ console.error('Training lessons extra merge failed', e); }
+
   var TRAINING_BEST_KEY = 'trt_training_best_v1';
   var trainingBest = {}; // stageKey -> best score (out of that stage's question count)
   try{
@@ -2964,30 +3293,57 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     racer: {emoji:'🏎️', name:'Шустрик'},
     tow:   {emoji:'🚚',  name:'Бывалый'}
   };
+  // Expanded from 4/3/3/2/2 to 9/8/8/7/7 phrases per pool (per explicit
+  // "советы тоже увеличь" request) so the same couple of lines don't repeat
+  // so quickly across a whole training session.
   var TRAINING_MENTOR = {
     correct: [
       {c:'racer', t:'Верно! На такой скорости далеко пойдёшь.'},
       {c:'tow',   t:'Точно, дружище. Так и запоминается — накрепко.'},
       {c:'racer', t:'Есть! Именно так — молодец.'},
-      {c:'tow',   t:'Верно, это ты уже знаешь твёрдо.'}
+      {c:'tow',   t:'Верно, это ты уже знаешь твёрдо.'},
+      {c:'racer', t:'В точку! Дальше будет ещё легче.'},
+      {c:'tow',   t:'Так держать. С таким знанием не подведёшь клиента.'},
+      {c:'racer', t:'Чисто! Без единой ошибки по трассе.'},
+      {c:'tow',   t:'Молодец. Такое уже не забывается.'},
+      {c:'racer', t:'Есть зачёт! Погнали дальше.'}
     ],
     wrong: [
       {c:'tow',   t:'Не в этот раз — но перечитай урок, и точно запомнишь.'},
       {c:'racer', t:'Почти! Ещё разок загляни в подсказку.'},
-      {c:'tow',   t:'Бывает. Повтори материал попозже — и всё срастётся.'}
+      {c:'tow',   t:'Бывает. Повтори материал попозже — и всё срастётся.'},
+      {c:'racer', t:'Мимо, но не страшно — на следующем круге получится.'},
+      {c:'tow',   t:'Ничего, вернись к уроку — там есть ответ.'},
+      {c:'racer', t:'Сорвался на повороте. Перечитай — и возьмёшь его увереннее.'},
+      {c:'tow',   t:'Не беда. Главное — разобраться, а не спешить.'},
+      {c:'racer', t:'Запомни этот момент — пригодится в следующий раз.'}
     ],
     resultsGood: [
       {c:'racer', t:'Отличный результат! Материал усвоен уверенно.'},
       {c:'tow',   t:'Вот это да — ты явно всё внимательно прочитал.'},
-      {c:'racer', t:'Высший балл! Так и продолжай.'}
+      {c:'racer', t:'Высший балл! Так и продолжай.'},
+      {c:'tow',   t:'Крепкий результат. На таком можно уже работать с клиентами.'},
+      {c:'racer', t:'Финиш на высшей передаче! Отличная работа.'},
+      {c:'tow',   t:'Видно, что урок не прошёл даром.'},
+      {c:'racer', t:'Это уровень мастера. Так держать.'}
     ],
     resultsOk: [
       {c:'tow',   t:'Неплохо! Пару моментов стоит повторить.'},
-      {c:'racer', t:'Хороший темп — но загляни в урок ещё раз для надёжности.'}
+      {c:'racer', t:'Хороший темп — но загляни в урок ещё раз для надёжности.'},
+      {c:'tow',   t:'Уже близко. Ещё один заход — и будет твёрдая база.'},
+      {c:'racer', t:'Неплохой круг, но есть куда ускориться.'},
+      {c:'tow',   t:'Нормальный результат, но советую закрепить материал.'},
+      {c:'racer', t:'Почти идеально — долети до финиша в следующий раз.'},
+      {c:'tow',   t:'Хорошая попытка. Повтори — и будет увереннее.'}
     ],
     resultsBad: [
       {c:'tow',   t:'Стоит повторить этот этап — материал ещё не закрепился.'},
-      {c:'racer', t:'Не расстраивайся, пройди урок ещё раз — и результат будет быстрее.'}
+      {c:'racer', t:'Не расстраивайся, пройди урок ещё раз — и результат будет быстрее.'},
+      {c:'tow',   t:'Бывает и так. Вернись к уроку — там всё по полочкам.'},
+      {c:'racer', t:'Сход с трассы, но не финиш. Ещё один заезд — и получится.'},
+      {c:'tow',   t:'Ничего страшного — этот этап стоит пройти снова не спеша.'},
+      {c:'racer', t:'Тут нужен перезапуск. Перечитай урок — и дальше будет легче.'},
+      {c:'tow',   t:'Не отчаивайся. С каждым повтором будет понятнее.'}
     ]
   };
   function trainingMentorPick(pool){
@@ -3189,11 +3545,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
    'trainingNavBtn','trainingNavBtnLabel','screenTraining','trainingBackBtn','trainingTitle',
    'trainingMentor','trainingMentorText','trainingMentorAvatar','trainingResultsMentorAvatar',
    'trainingStageView','trainingStageList',
+   'trainingLevelView','trainingLevelList',
+   'trainingChapterView','trainingChapterList',
    'trainingLessonView','trainingLessonProgressText','trainingLessonProgressFill',
-   'trainingLessonCard','trainingLessonHeading','trainingLessonBody','trainingLessonDots',
+   'trainingLessonCard','trainingLessonPhoto','trainingLessonHeading','trainingLessonBody','trainingLessonDots',
    'trainingLessonPrevBtn','trainingLessonNextBtn',
    'trainingCheckView','trainingCheckProgressText','trainingCheckScoreText','trainingCheckProgressFill',
-   'trainingCheckQuestionText','trainingCheckOptionsList','trainingCheckNextRow','trainingCheckNextBtn',
+   'trainingCheckQuestionText','trainingCheckQuestionPhoto','trainingCheckOptionsList','trainingCheckNextRow','trainingCheckNextBtn',
    'trainingResultsView','trainingResultsScore','trainingResultsStageTitle','trainingResultsMsg',
    'trainingResultsMentor','trainingResultsMentorText','trainingRetryBtn','trainingToStagesBtn',
    'screenWarehouse','whBackBtn','whTitle','whQ','whClearBtn','whResults','whEmpty','whMoreBtn','whPeriod',
@@ -3492,6 +3850,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     partsById = {};
     db.parts.forEach(function(p){ partsById[p.id] = p; });
     buildCarIndex();
+    // Собрать категории/главы Обучения теперь, когда partsById уже
+    // заполнен (нужен для имён деталей в карточках img_opts) — см.
+    // определение trtBuildTrainingCategories() рядом с функциями Обучения.
+    try{ trtBuildTrainingCategories(); }catch(e){ console.error('Training categories build failed', e); }
     // Restore the last "Обновить базу" result (if any) BEFORE initUI() so
     // its first read of db._warehouseList already reflects it, instead of
     // flashing 0/empty for a moment and then correcting itself.
@@ -3692,9 +4054,34 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     }
   }
 
+  var STAT_TOTAL_CACHE_KEY = 'trt_stat_total_count_v1';
+  function loadCachedStatTotal(){
+    try{
+      var v = localStorage.getItem(STAT_TOTAL_CACHE_KEY);
+      var n = v ? parseInt(v, 10) : NaN;
+      return (isFinite(n) && n > 0) ? n : null;
+    }catch(e){ return null; }
+  }
+  function saveCachedStatTotal(n){
+    try{ if(n > 0) localStorage.setItem(STAT_TOTAL_CACHE_KEY, String(n)); }catch(e){}
+  }
   function initUI(){
     var ownCars = db.cars.filter(function(c){return c.own;}).length;
-    animateCount(el.statTotal, db._warehouseList ? db._warehouseList.length : 0);
+    // v123: никогда не показываем "0" на плитке «Склад», пока db._warehouseList
+    // ещё загружается (или по любой другой причине оказался пустым) —
+    // показываем последнее успешно посчитанное значение (кэшируется
+    // отдельно через saveCachedStatTotal()), и только если кэша ещё нет —
+    // остаёмся на исходном плейсхолдере «—» (действительно первый запуск).
+    (function(){
+      var liveCount = db._warehouseList ? db._warehouseList.length : 0;
+      if(liveCount > 0){
+        animateCount(el.statTotal, liveCount);
+        saveCachedStatTotal(liveCount);
+      } else {
+        var cached = loadCachedStatTotal();
+        if(cached){ el.statTotal.textContent = String(cached); }
+      }
+    })();
     animateCount(el.statOwn, db.parts.filter(function(p){return p.own;}).length);
     animateCount(el.statCars, db.cars.length);
     el.stats.hidden = false;
@@ -5020,6 +5407,27 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   function trainingStageByKey(key){
     var stages = TRAINING_DATA.stages || [];
     for(var i=0;i<stages.length;i++){ if(stages[i].key===key) return stages[i]; }
+    for(var sk in TRAINING_CATEGORIES_BY_STAGE){
+      var cats = TRAINING_CATEGORIES_BY_STAGE[sk];
+      for(var c=0;c<cats.length;c++){
+        var chapters = cats[c].chapters || [];
+        for(var j=0;j<chapters.length;j++){ if(chapters[j].key===key) return chapters[j]; }
+      }
+    }
+    return null;
+  }
+  function trainingCategoryByKey(key){
+    for(var sk in TRAINING_CATEGORIES_BY_STAGE){
+      var cats = TRAINING_CATEGORIES_BY_STAGE[sk];
+      for(var c=0;c<cats.length;c++){ if(cats[c].key===key) return cats[c]; }
+    }
+    return null;
+  }
+  function trtStageKeyFromCategoryKey(catKey){
+    for(var sk in TRAINING_CATEGORIES_BY_STAGE){
+      var cats = TRAINING_CATEGORIES_BY_STAGE[sk];
+      for(var c=0;c<cats.length;c++){ if(cats[c].key===catKey) return sk; }
+    }
     return null;
   }
   function showTrainingScreen(pushHistory){
@@ -5044,15 +5452,40 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   // browser history — same convention as showQuizSubview().
   function showTrainingSubview(name){
     if(el.trainingStageView) el.trainingStageView.hidden = name!=='stages';
+    if(el.trainingLevelView) el.trainingLevelView.hidden = name!=='levels';
+    if(el.trainingChapterView) el.trainingChapterView.hidden = name!=='chapters';
     if(el.trainingLessonView) el.trainingLessonView.hidden = name!=='lesson';
     if(el.trainingCheckView) el.trainingCheckView.hidden = name!=='check';
     if(el.trainingResultsView) el.trainingResultsView.hidden = name!=='results';
   }
+  var trainingChapterListParent = null;
   function trainingBack(){
-    if(el.trainingStageView && el.trainingStageView.hidden){
-      // In lesson/check/results — step back to the stage list.
+    if(el.trainingChapterView && !el.trainingChapterView.hidden){
+      // In the chapter picker — step back to the category list.
+      showTrainingSubview('levels');
+      renderTrainingCategories(trainingChapterListParent);
+    } else if(el.trainingLevelView && !el.trainingLevelView.hidden){
+      // In the category picker — step back to the stage list.
       showTrainingSubview('stages');
       renderTrainingStages();
+    } else if(el.trainingStageView && el.trainingStageView.hidden){
+      // In lesson/check/results — step back to the chapter list if this
+      // chapter was opened from a category, to the category list if it
+      // was the stage's intro course, otherwise to the stage list.
+      if(state.training && state.training.parentKey){
+        var cat = trainingCategoryByKey(state.training.parentKey);
+        if(cat){
+          trainingChapterListParent = trtStageKeyFromCategoryKey(state.training.parentKey);
+          showTrainingSubview('chapters');
+          renderTrainingChapters(state.training.parentKey);
+        } else {
+          showTrainingSubview('levels');
+          renderTrainingCategories(state.training.parentKey);
+        }
+      } else {
+        showTrainingSubview('stages');
+        renderTrainingStages();
+      }
     } else {
       goToHomeScreen();
     }
@@ -5077,15 +5510,92 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       );
     }).join('');
     Array.prototype.forEach.call(el.trainingStageList.querySelectorAll('.quiz-stage-tile[data-stage]'), function(btn){
-      btn.addEventListener('click', function(){ openTrainingStage(btn.getAttribute('data-stage')); });
+      btn.addEventListener('click', function(){
+        var key = btn.getAttribute('data-stage');
+        if(TRAINING_CATEGORIES_BY_STAGE[key] && TRAINING_CATEGORIES_BY_STAGE[key].length){
+          showTrainingSubview('levels');
+          renderTrainingCategories(key);
+        } else {
+          openTrainingStage(key);
+        }
+      });
     });
   }
-  function openTrainingStage(key){
+  function openTrainingStage(key, parentKey){
     var stage = trainingStageByKey(key);
     if(!stage) return;
-    state.training = { stageKey: key, lessonIdx: 0, qIndex: 0, score: 0, answered: false, questions: [] };
+    state.training = { stageKey: key, parentKey: parentKey || null, lessonIdx: 0, qIndex: 0, score: 0, answered: false, questions: [] };
     showTrainingSubview('lesson');
     renderTrainingLesson();
+  }
+  // v125: подэкран "levels" теперь показывает плитку вводного курса этапа
+  // плюс плитки КАТЕГОРИЙ ТОВАРОВ (а не уровней сложности), собранных
+  // trtBuildTrainingCategories().
+  function renderTrainingCategories(parentKey){
+    var stage = trainingStageByKey(parentKey);
+    var cats = TRAINING_CATEGORIES_BY_STAGE[parentKey] || [];
+    if(!stage || !el.trainingLevelList) return;
+    trainingShowMentor(el.trainingMentorAvatar, el.trainingMentorText, t('trainingLevelsHint'));
+    var introBest = trainingBest[parentKey];
+    var introTotalQ = (stage.questions||[]).length;
+    var introBadge = (introBest!=null) ? '<span class="quiz-stage-best">'+introBest+'/'+introTotalQ+'</span>' : '';
+    var tilesHtml = [
+      '<button type="button" class="quiz-stage-tile" data-level="'+esc(parentKey)+'">'+
+        '<span class="quiz-stage-num">★</span>'+
+        '<span class="quiz-stage-info"><span class="quiz-stage-title">'+esc(t('trainingIntroCourse'))+'</span></span>'+
+        introBadge+
+        '<svg class="quiz-stage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 6l6 6-6 6"/></svg>'+
+      '</button>'
+    ];
+    cats.forEach(function(cat, idx){
+      var title = esc(state.lang==='en' ? (cat.titleEn||cat.title) : cat.title);
+      var subtitle = esc(String(cat.count||0)) + (state.lang==='en' ? ' items' : ' материалов');
+      tilesHtml.push(
+        '<button type="button" class="quiz-stage-tile" data-category="'+esc(cat.key)+'">'+
+          '<span class="quiz-stage-num">'+(idx+1)+'</span>'+
+          '<span class="quiz-stage-info"><span class="quiz-stage-title">'+title+'</span></span>'+
+          '<span class="quiz-stage-best">'+subtitle+'</span>'+
+          '<svg class="quiz-stage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 6l6 6-6 6"/></svg>'+
+        '</button>'
+      );
+    });
+    el.trainingLevelList.innerHTML = tilesHtml.join('');
+    Array.prototype.forEach.call(el.trainingLevelList.querySelectorAll('.quiz-stage-tile[data-level]'), function(btn){
+      btn.addEventListener('click', function(){ openTrainingStage(btn.getAttribute('data-level'), parentKey); });
+    });
+    Array.prototype.forEach.call(el.trainingLevelList.querySelectorAll('.quiz-stage-tile[data-category]'), function(btn){
+      btn.addEventListener('click', function(){ openTrainingCategory(btn.getAttribute('data-category'), parentKey); });
+    });
+  }
+  // v125: новый подэкран "chapters" — список коротких глав (10-15 карточек
+  // + мини-тест на 5-8 вопросов) внутри одной выбранной категории товаров.
+  function openTrainingCategory(key, parentStageKey){
+    trainingChapterListParent = parentStageKey;
+    showTrainingSubview('chapters');
+    renderTrainingChapters(key);
+  }
+  function renderTrainingChapters(categoryKey){
+    var cat = trainingCategoryByKey(categoryKey);
+    if(!cat || !el.trainingChapterList) return;
+    trainingShowMentor(el.trainingMentorAvatar, el.trainingMentorText, t('trainingChaptersHint'));
+    var tilesHtml = (cat.chapters||[]).map(function(ch, idx){
+      var best = trainingBest[ch.key];
+      var totalQ = (ch.questions||[]).length;
+      var badge = (best!=null) ? '<span class="quiz-stage-best">'+best+'/'+totalQ+'</span>' : '';
+      var title = esc(state.lang==='en' ? (ch.titleEn||ch.title) : ch.title);
+      return (
+        '<button type="button" class="quiz-stage-tile" data-chapter="'+esc(ch.key)+'">'+
+          '<span class="quiz-stage-num">'+(idx+1)+'</span>'+
+          '<span class="quiz-stage-info"><span class="quiz-stage-title">'+title+'</span></span>'+
+          badge+
+          '<svg class="quiz-stage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 6l6 6-6 6"/></svg>'+
+        '</button>'
+      );
+    });
+    el.trainingChapterList.innerHTML = tilesHtml.join('');
+    Array.prototype.forEach.call(el.trainingChapterList.querySelectorAll('.quiz-stage-tile[data-chapter]'), function(btn){
+      btn.addEventListener('click', function(){ openTrainingStage(btn.getAttribute('data-chapter'), categoryKey); });
+    });
   }
   function renderTrainingLesson(){
     var stage = trainingStageByKey(state.training.stageKey);
@@ -5099,6 +5609,15 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     el.trainingLessonProgressFill.style.width = Math.round((idx/total)*100)+'%';
     el.trainingLessonHeading.textContent = lesson.heading;
     el.trainingLessonBody.textContent = lesson.body;
+    if(el.trainingLessonPhoto){
+      if(lesson.photo){
+        el.trainingLessonPhoto.src = lesson.photo;
+        el.trainingLessonPhoto.hidden = false;
+      } else {
+        el.trainingLessonPhoto.hidden = true;
+        el.trainingLessonPhoto.removeAttribute('src');
+      }
+    }
     trainingShowMentor(el.trainingMentorAvatar, el.trainingMentorText, lesson.tip || stage.mentorIntro || '');
     if(el.trainingLessonDots){
       el.trainingLessonDots.innerHTML = lessons.map(function(_, i){
@@ -5147,7 +5666,34 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     el.trainingCheckScoreText.textContent = state.training.score+'/'+total;
     el.trainingCheckProgressFill.style.width = Math.round((qi/total)*100)+'%';
     el.trainingCheckQuestionText.textContent = q.q;
+    // Questions merged in from the Tests bank (see the merge right after
+    // TRAINING_DATA/QUIZ_DATA parse above) can carry the same
+    // qtype:'img_q'/'img_opts' + partsById-photo shape that the quiz
+    // screen's own renderQuizQuestion() already handles -- mirrored here
+    // 1:1 so Training also "trains on pictures", per explicit request.
+    if(el.trainingCheckQuestionPhoto){
+      var qImgPart = (q.qtype==='img_q' && q.img) ? partsById[q.img] : null;
+      if(qImgPart && qImgPart.photo){
+        el.trainingCheckQuestionPhoto.src = qImgPart.photo;
+        el.trainingCheckQuestionPhoto.hidden = false;
+      } else {
+        el.trainingCheckQuestionPhoto.hidden = true;
+        el.trainingCheckQuestionPhoto.removeAttribute('src');
+      }
+    }
+    var isImgOpts = (q.qtype === 'img_opts');
+    el.trainingCheckOptionsList.classList.toggle('quiz-options-img', isImgOpts);
     el.trainingCheckOptionsList.innerHTML = q.options.map(function(opt, oi){
+      if(isImgOpts){
+        var op = partsById[opt];
+        var src = (op && op.photo) ? op.photo : '';
+        return (
+          '<button type="button" class="quiz-option quiz-option-img" data-idx="'+oi+'">'+
+            '<span class="quiz-option-mark"></span>'+
+            '<img class="quiz-option-photo" src="'+esc(src)+'" alt="">'+
+          '</button>'
+        );
+      }
       return (
         '<button type="button" class="quiz-option" data-idx="'+oi+'">'+
           '<span class="quiz-option-mark"></span>'+
@@ -6618,7 +7164,7 @@ var KG_PER_PC_TABLE = {
     // buildTd2NameIndex) — replaces the old ~943-item catalog-only count.
     if(components){
       db._warehouseList = components.slice().sort(function(a,b){ return a.name < b.name ? -1 : a.name > b.name ? 1 : 0; });
-      if(el.statTotal){ animateCount(el.statTotal, db._warehouseList.length); bumpStatTile(el.statTotalCard); }
+      if(el.statTotal){ animateCount(el.statTotal, db._warehouseList.length); bumpStatTile(el.statTotalCard); saveCachedStatTotal(db._warehouseList.length); }
       // "Период" (as-of date), read straight off the uploaded sheet's own
       // print-header area (see extractTd2Period) — never falls back to
       // "today" or anything else we'd have to guess, since that's not
@@ -8063,5 +8609,3 @@ if(!Z) status('Не загрузилась библиотека распозна
 </script>
 
 </body></html>
-</body>
-</html>
