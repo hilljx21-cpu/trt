@@ -252,15 +252,15 @@
      24px mark used in every other screen's header -- per request, with its
      own border-radius scaled up so the red background reads as one whole
      rounded badge rather than a thin sliver. */
-  #trtLogoHome{height:56px; border-radius:11px;}
+  #trtLogoHome, #trtLogoDept, #trtLogoSupply{height:56px; border-radius:11px;}
   .brand h1{font-size:16px; font-weight:600; margin:0; letter-spacing:-.01em; min-width:0; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   /* Home screen only: the full company name ("Technologies of Real Time")
      is much longer than every other screen's title, and squeezed into the
      leftover space next to the bigger logo + lang-switch/Контакт cluster it
      ellipsised down to almost nothing. Wrap the brand row and give the
      title its own full-width line underneath instead. */
-  #screenHome .brand{flex-wrap:wrap;}
-  #screenHome .brand h1{order:1; flex-basis:100%; margin-top:2px;}
+  #screenHome .brand, #screenDept .brand, #screenSupply .brand{flex-wrap:wrap;}
+  #screenHome .brand h1, #screenDept .brand h1, #screenSupply .brand h1{order:1; flex-basis:100%; margin-top:2px;}
   /* Right-hand cluster of the brand row: language switch stacked directly
      above the Контакт button, per the home-screen restructure -- keeps both
      compact and out of the title's way instead of competing for width on
@@ -1203,6 +1203,93 @@
     .proc-corner-group{animation:none!important; transform:none!important;}
   }
 
+  /* "Отдел Продажи" tile icon: animated 3D bar chart with a hand-drawn-style
+     trend arrow (user supplied a reference picture of a flat bar-chart+arrow
+     icon and asked for: a "fixed picture" -- i.e. a real illustrated icon,
+     not a generic cart glyph -- with "3D elements"; bars that continuously
+     grow/shrink, each out of sync with the others; an arrow that appears
+     from the left and draws itself upward over the bars like tracing the
+     chart, pausing 3s once it reaches the last (tallest) bar; then the
+     arrow erases itself over 0.9s; and the whole thing cycles through 5
+     different bar-height patterns, one new one per loop, never repeating
+     the same chart twice in a row). Same sizing convention as the other
+     full-illustration tiles above (.menu-tile-icon--proc-anim etc. --
+     123.2px circle / 140px svg, scoped under two classes so this doesn't
+     lose to the generic ".menu-tile-icon svg{width:48.4px}" rule on
+     specificity, per the proc-anim comment above about that exact trap). */
+  .menu-tile-icon--sales-anim{background:none; width:123.2px; height:123.2px; position:relative; z-index:2;}
+  .menu-tile-icon--sales-anim .sales-icon-svg{width:140px; height:140px; overflow:visible;}
+  .sales-baseline{stroke:color-mix(in srgb, var(--text) 13%, transparent); stroke-width:1.4;}
+  /* Each bar is built (in JS, see salesIconInit) as a small isometric 3D
+     block: a front rect plus top/side parallelogram "faces" in lighter/
+     darker shades of the same hue, all living inside two NESTED scale
+     wrappers so they always move as one rigid unit:
+       .sb-scale    -- transitions to the new dataset's height fraction,
+                       over the same 900ms as the arrow's erase, so bars
+                       are already in their new shape by the time the next
+                       draw phase begins (set via inline style + this
+                       CSS transition, not a keyframe, since the target
+                       value is only known at runtime per dataset).
+       .sb-breathe  -- the continuous "growing/shrinking" (независимо и не
+                       синхронно): one shared keyframe, but each bar gets
+                       its own duration + a negative delay so all four
+                       start life already out of phase with each other.
+     Both scale from the BOTTOM (transform-origin 50% 100% in fill-box
+     space, the same SVG-transform-origin trick used elsewhere in this
+     file for small icons) so growth only ever pushes the top edge up. */
+  .sb-scale{transform-box:fill-box; transform-origin:50% 100%; transition:transform .9s cubic-bezier(.4,0,.2,1);}
+  .sb-breathe{transform-box:fill-box; transform-origin:50% 100%; animation:salesBarBreathe 2s ease-in-out infinite;}
+  .sb-breathe.sb-b1{animation-duration:1.9s; animation-delay:-0.3s;}
+  .sb-breathe.sb-b2{animation-duration:2.3s; animation-delay:-1.1s;}
+  .sb-breathe.sb-b3{animation-duration:1.7s; animation-delay:-0.7s;}
+  .sb-breathe.sb-b4{animation-duration:2.6s; animation-delay:-1.8s;}
+  @keyframes salesBarBreathe{
+    0%{transform:scaleY(1);}
+    50%{transform:scaleY(1.09);}
+    100%{transform:scaleY(1);}
+  }
+  /* The arrow is drawn/erased with the classic stroke-dasharray = path
+     length, stroke-dashoffset animated length->0 (draw) and back (erase)
+     technique -- both timed and triggered from JS (salesIconInit) since
+     the path's "d" itself is different for every one of the 5 datasets
+     and has to be rebuilt each loop, which a pure CSS keyframe can't do.
+     The arrowhead is a separate filled triangle (not a marker on the line
+     itself) so it reads as a crisp, distinct wedge instead of blending
+     into the line's own round stroke-cap -- the line's endpoint stops at
+     the wedge's back edge, and the solid triangle sits on top of it. */
+  .sales-arrow-path{fill:none; stroke:#1E2430; stroke-width:4.2; stroke-linecap:round; stroke-linejoin:round;}
+  .sales-arrowhead{fill:#1E2430; opacity:0; transition:opacity .18s ease;}
+  .sales-arrowhead.show{opacity:1;}
+  @media (prefers-reduced-motion: reduce){
+    .sb-scale{transition:none!important;}
+    .sb-breathe{animation:none!important; transform:none!important;}
+    .sales-arrow-path{transition:none!important;}
+    .sales-arrowhead{transition:none!important;}
+  }
+
+  /* "Отдел Снабжения" tile icon: animated two-act illustration built from the
+     two reference pictures the user supplied (a crane lifting/stacking
+     shipping containers; a clipboard checklist next to an order form) --
+     user asked for "3D elements" and a specific motion: act 1, a crane
+     lifts each stacked container away one by one (it disappears), then all
+     containers slowly reappear; act 2, checklist rows get randomly marked
+     with a green check or red X, then a sheet prints the word "Order" and
+     falls away; the whole thing loops back to act 1, with act 2's
+     check/X pattern re-randomized every loop. One icon, two acts in
+     sequence (confirmed with the user). Same full-illustration sizing
+     convention as the other animated tiles (.menu-tile-icon--sales-anim
+     etc. -- 123.2px circle / 140px svg, scoped under two classes so this
+     doesn't lose to the generic ".menu-tile-icon svg{width:48.4px}" rule
+     on specificity). Driven from JS (see supplyIconInit) the same way the
+     sales icon is -- the CSS below only supplies the transition timing
+     that JS triggers by changing transform/opacity. */
+  .menu-tile-icon--supply-anim{background:none; width:123.2px; height:123.2px; position:relative; z-index:2;}
+  .menu-tile-icon--supply-anim .supply-icon-svg{width:140px; height:140px; overflow:visible;}
+  @media (prefers-reduced-motion: reduce){
+    .supply-act1, .supply-act2, .supply-trolley, .supply-cable, .supply-hook,
+    .supply-box, .supply-cl-row .cl-mark, .supply-order-sheet{transition:none!important;}
+  }
+
   /* ---------- quiz screen ---------- */
   .quiz-stage-list{display:flex; flex-direction:column; gap:10px; margin-top:14px;}
   .quiz-stage-tile{
@@ -1684,24 +1771,142 @@
 .cargo-items-summary{font-size:12px; color:var(--text-dim); margin:12px 2px; display:flex; gap:14px; flex-wrap:wrap;}
 .cargo-items-summary b{color:var(--text);}
 .cargo-error{color:var(--accent); font-size:12.5px; background:var(--accent-soft); border-radius:var(--radius-s); padding:8px 10px; margin:8px 0;}
-.cargo-btn-row{display:flex; gap:10px; margin-top:16px;}
-.cargo-btn-row .proc-btn{flex:1.4;}
-.cargo-btn-secondary{flex:1; border:1px solid var(--border); background:var(--surface); color:var(--text); border-radius:var(--radius-m); padding:12px; font-size:14px; font-weight:600; cursor:pointer; font-family:var(--font-ui);}
+.cargo-btn-row{display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;}
+.cargo-btn-row > button{flex:1 1 130px;}
+.cargo-btn-row .proc-btn{flex:1.4 1 150px;}
+.cargo-btn-secondary{border:1px solid var(--border); background:var(--surface); color:var(--text); border-radius:var(--radius-m); padding:12px; font-size:14px; font-weight:600; cursor:pointer; font-family:var(--font-ui);}
 .cargo-btn-secondary:active{background:var(--surface-2);}
+.cargo-btn-secondary.active{background:var(--cargo); border-color:var(--cargo); color:#fff;}
+.cargo-canvas-wrap.edit-mode{outline:2px solid var(--cargo); outline-offset:-2px;}
+.cargo-edit-panel{position:absolute; left:8px; top:8px; right:50px; background:rgba(16,21,29,.85); border-radius:10px; padding:8px 10px; display:flex; align-items:center; gap:7px; flex-wrap:wrap; color:#fff; font-size:12.5px;}
+.cargo-edit-panel .cep-name{display:flex; flex-direction:column; gap:1px; flex:1 1 90px; min-width:70px; overflow:hidden;}
+.cargo-edit-panel .cep-line1{font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.cargo-edit-panel .cep-line2{font-weight:500; font-size:11px; color:rgba(255,255,255,.72); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.cargo-edit-panel button{border:1px solid rgba(255,255,255,.3); background:rgba(255,255,255,.1); color:#fff; border-radius:6px; padding:6px 9px; font-size:12px; cursor:pointer; font-family:var(--font-ui); white-space:nowrap;}
+.cargo-edit-panel button:active{background:rgba(255,255,255,.25);}
+.cargo-canvas-controls{display:flex; flex-direction:column; gap:6px;}
 .cargo-result-tabs{display:flex; gap:6px; overflow-x:auto; padding:2px 2px 10px;}
 .cargo-result-tab{flex-shrink:0; border:1px solid var(--border); background:var(--surface); color:var(--text-dim); border-radius:999px; padding:6px 12px; font-size:12.5px; font-weight:600; cursor:pointer; font-family:var(--font-ui);}
 .cargo-result-tab.sel{background:var(--cargo); border-color:var(--cargo); color:#fff;}
-.cargo-canvas-wrap{position:relative; background:#10151d; border-radius:var(--radius-m); overflow:hidden; touch-action:none;}
+.cargo-canvas-wrap{position:relative; background:#ffffff; border:1px solid var(--border); border-radius:var(--radius-m); overflow:hidden; touch-action:none;}
 #cargoCanvas{width:100%; height:auto; display:block; cursor:grab;}
 #cargoCanvas:active{cursor:grabbing;}
 .cargo-canvas-controls{position:absolute; top:8px; right:8px;}
-.cargo-canvas-btn{width:32px; height:32px; border-radius:50%; border:1px solid rgba(255,255,255,.25); background:rgba(20,25,35,.6); color:#fff; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center;}
+.cargo-canvas-btn{position:relative; width:32px; height:32px; border-radius:50%; border:1px solid rgba(255,255,255,.25); background:rgba(20,25,35,.6); color:#fff; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center;}
 .cargo-canvas-hint{position:absolute; left:8px; bottom:8px; font-size:10.5px; color:rgba(255,255,255,.65); background:rgba(0,0,0,.35); padding:3px 7px; border-radius:6px;}
+/* Brief toast shown when a move is blocked (overlap) or a step/drag ran into the floor/ceiling
+   with nothing left to give -- previously these just silently did nothing, which read as the
+   app being broken (especially mid-drag, where an invalid group move still previews live and
+   only reverts on release). Centered above the bottom hint so it never collides with the
+   top-left edit panel, even when that panel wraps to two rows on a narrow screen. */
+.cargo-action-toast{position:absolute; left:50%; bottom:44px; transform:translateX(-50%) translateY(6px); z-index:6; background:rgba(176,30,30,.95); color:#fff; border-radius:10px; padding:8px 14px; font-size:12.5px; max-width:88%; text-align:center; box-shadow:0 6px 18px rgba(0,0,0,.28); opacity:0; pointer-events:none; transition:opacity .25s ease, transform .25s ease;}
+.cargo-action-toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+.cargo-action-toast .cat-title{font-weight:700;}
+.cargo-action-toast .cat-desc{font-weight:500; font-size:11.5px; margin-top:2px; opacity:.92;}
+.cargo-canvas-btn.active{background:var(--cargo); border-color:var(--cargo);}
+.cargo-canvas-btn--rotate{margin-top:8px;}
+.cargo-canvas-btn--undo{margin-top:8px;}
+.cargo-canvas-btn:disabled{opacity:.35; cursor:default;}
+.cargo-canvas-btn:disabled::after{display:none;}
+/* Button name: shown on hover/focus for mouse/keyboard users (content comes straight from the
+   button's own aria-label, so there's only one place to keep the Russian text in sync), and
+   given a brief "pop up, hold, drift upward, fade" animation via the .tip-pop class for a tap on
+   touch devices, which have no hover at all -- see the click listener that toggles that class. */
+.cargo-canvas-btn::after{
+  content:attr(aria-label);
+  position:absolute; right:40px; top:50%; margin-top:-11px;
+  background:rgba(20,25,35,.94); color:#fff; font-size:11px; font-weight:600;
+  padding:4px 9px; border-radius:6px; white-space:nowrap;
+  opacity:0; pointer-events:none; transition:opacity .18s ease;
+}
+.cargo-canvas-btn:hover::after, .cargo-canvas-btn:focus-visible::after{ opacity:1; }
+.cargo-canvas-btn.tip-pop::after{ animation:cargoTipPop .85s ease-out forwards; }
+@keyframes cargoTipPop{
+  0%{ opacity:0; transform:translateY(4px); }
+  18%{ opacity:1; transform:translateY(0); }
+  60%{ opacity:1; transform:translateY(0); }
+  100%{ opacity:0; transform:translateY(-16px); }
+}
+/* Color legend ("как справка"): with names no longer printed on the boxes themselves (they
+   cluttered and overlapped once a container held many small items), this is the only place
+   that still spells out which color is which cargo. Floats top-left of the canvas, clear of the
+   "Готово" button and the zoom/select/rotate column (right:44px leaves room for that 32px-wide
+   button stack) in both the compact and fullscreen-desktop edit views. */
+.cargo-canvas-legend{position:absolute; left:8px; right:44px; top:52px; display:flex; flex-wrap:wrap; gap:5px; z-index:3; pointer-events:none;}
+/* The legend has a fixed top:52px and no z-index of its own problem, so on a narrow screen,
+   once the edit panel's 7 buttons + name label wrap onto a second row, the panel grows taller
+   than that and the legend's chips visually collide with/overlap the wrapped buttons (reported
+   as garbled text, e.g. "Вперёд" reading as "ерёд"). The legend is only useful outside edit mode
+   anyway (edit mode has its own box labels via the edit panel), so simplest fix: hide it while
+   editing, on every screen size, not just the narrow ones that actually show the collision. */
+.cargo-canvas-wrap.edit-mode .cargo-canvas-legend{display:none;}
+.ccl-chip{display:flex; align-items:center; gap:5px; background:rgba(255,255,255,.9); border:1px solid rgba(0,0,0,.08); border-radius:999px; padding:3px 9px 3px 6px; font-size:11px; font-weight:600; color:#1E2430; box-shadow:0 1px 3px rgba(0,0,0,.12); max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.ccl-dot{width:9px; height:9px; border-radius:50%; flex-shrink:0; background:var(--ccl-color,#8a8f98);}
+.cargo-canvas-wrap.select-mode #cargoCanvas{cursor:crosshair;}
+.cargo-edit-done-fs{display:none;}
+/* Desktop "80% of the monitor" edit mode: the canvas breaks out of the app's narrow
+   560px column into a large centered overlay while editing, so there's real room to
+   work with many boxes. Only kicks in above a desktop-ish width; phones keep the
+   normal in-flow compact view. */
+@media (min-width:860px){
+  .cargo-canvas-wrap.edit-mode{
+    position:fixed; inset:10vh 10vw; z-index:80;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 24px 70px rgba(0,0,0,.4);
+  }
+  .cargo-canvas-wrap.edit-mode #cargoCanvas{
+    /* Was width:auto;height:100% -- that locks the canvas's CSS box to its internal 1000x1025
+       (near-square) resolution's aspect ratio, so on a wide desktop overlay it rendered as a
+       narrow square-ish column with large empty margins left and right. Filling both axes here,
+       combined with cargoSyncCanvasResolution() giving the canvas's internal resolution that
+       same wide aspect ratio when entering fullscreen edit mode, makes the 3D view actually use
+       the whole overlay instead of just its vertical middle. */
+    width:100%; height:100%;
+  }
+  body.cargo-edit-fullscreen::after{
+    content:''; position:fixed; inset:0; background:rgba(10,14,20,.55); z-index:70;
+  }
+  /* The overlay sits above the page's normal button row, so a dedicated close button lives
+     inside it -- otherwise "Готово" would be visually buried underneath and unreachable. */
+  .cargo-canvas-wrap.edit-mode .cargo-edit-done-fs{
+    display:flex; position:absolute; left:8px; top:8px; z-index:5;
+    align-items:center; gap:6px; border:1px solid rgba(255,255,255,.3);
+    background:rgba(20,25,35,.72); color:#fff; border-radius:999px; padding:8px 14px;
+    font-size:13px; font-weight:600; cursor:pointer; font-family:var(--font-ui);
+  }
+  .cargo-canvas-wrap.edit-mode .cargo-edit-panel{ left:8px; top:52px; }
+}
 .cargo-stats-row{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px;}
 .cargo-stat{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m); padding:10px; text-align:center;}
 .cargo-stat .cs-n{font-family:var(--font-mono); font-size:18px; font-weight:700;}
 .cargo-stat .cs-l{font-size:10px; color:var(--text-faint); margin-top:2px;}
+.cargo-stat .cs-sub{font-size:11px; font-weight:600; color:var(--text-dim); margin-top:4px;}
+.cargo-recap{display:flex; flex-direction:column; gap:6px; margin-top:12px;}
+.cargo-recap-row{display:flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--border); border-left:4px solid var(--rc-color, var(--border)); border-radius:var(--radius-s); padding:8px 10px;}
+.cargo-recap-row .crr-name{flex:1; font-size:13px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--rc-color, var(--text));}
+.cargo-recap-row .crr-pill{flex-shrink:0; font-size:11px; font-weight:700; color:var(--cargo); background:var(--cargo-bg); border:1px solid var(--cargo-border); border-radius:999px; padding:3px 9px;}
+.cargo-recap-row .crr-qty{flex-shrink:0; font-size:12.5px; color:var(--rc-color, var(--text-dim)); font-family:var(--font-mono); font-weight:700;}
 .cargo-unplaced{background:var(--accent-soft); color:var(--accent); border-radius:var(--radius-s); padding:9px 11px; font-size:12px; margin-top:10px;}
+.cargo-variants-row{display:flex; gap:10px; overflow-x:auto; padding:2px 2px 6px; margin-top:10px;}
+.cargo-variant-card{flex:0 0 150px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m); padding:10px; display:flex; flex-direction:column; gap:6px;}
+.cvc-head{display:flex; align-items:center; justify-content:space-between; gap:6px;}
+.cvc-title{font-size:12.5px; font-weight:700; color:var(--text);}
+.cvc-del{border:none; background:none; color:var(--text-faint); font-size:13px; cursor:pointer; padding:2px 4px; line-height:1;}
+.cvc-del:hover{color:var(--accent);}
+.cvc-sub{font-size:10.5px; color:var(--text-faint); line-height:1.3; min-height:2.4em;}
+.cvc-stats{font-size:11.5px; color:var(--text-dim); font-family:var(--font-mono);}
+.cvc-open{border:1px solid var(--cargo); background:var(--cargo-bg); color:var(--cargo); border-radius:var(--radius-s); padding:6px 8px; font-size:12px; font-weight:600; cursor:pointer; font-family:var(--font-ui);}
+.cvc-open:active{background:var(--cargo); color:#fff;}
+/* Auto-sort landed on a layout identical to a variant that's already in this row (inevitable
+   whenever sort order can't change anything, e.g. a single item) -- rather than adding a
+   pointless duplicate card, the existing one gets a brief highlight pulse so it's obvious that's
+   the result the user already has. */
+.cargo-variant-card.cvc-flash{animation:cvcFlash .9s ease-out;}
+@keyframes cvcFlash{
+  0%{ box-shadow:0 0 0 0 rgba(30,95,168,.55); border-color:var(--cargo); }
+  60%{ box-shadow:0 0 0 6px rgba(30,95,168,0); border-color:var(--cargo); }
+  100%{ box-shadow:0 0 0 0 rgba(30,95,168,0); }
+}
 .cargo-saved-wrap{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m); padding:10px 12px; margin-top:12px;}
 .cargo-saved-head{font-size:12px; font-weight:700; color:var(--text-dim); margin-bottom:6px;}
 .cargo-saved-item{display:flex; align-items:center; gap:8px; padding:7px 0; border-top:1px solid var(--border);}
@@ -1723,19 +1928,97 @@
   <div class="screen" id="screenDept">
     <header class="top">
       <div class="brand">
+        <img class="mark home-logo" id="trtLogoDept" data-nav="dept-direct" src="data:image/png;base64,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" alt="TRT">
         <h1 id="deptTitle">Technologies of Real Time</h1>
+        <div class="brand-actions">
+          <span class="lang-switch" id="langSwitch3">
+            <button class="lang-btn" data-lang="ru" aria-pressed="true" aria-label="Русский"><span class="flag"><svg viewBox="0 0 3 2" xmlns="http://www.w3.org/2000/svg"><rect width="3" height="0.667" y="0" fill="#fff"/><rect width="3" height="0.666" y="0.667" fill="#0039a6"/><rect width="3" height="0.667" y="1.333" fill="#d52b1e"/></svg></span>RU</button>
+            <button class="lang-btn" data-lang="en" aria-pressed="false" aria-label="English"><span class="flag"><svg viewBox="0 0 60 30" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="30" fill="#00247d"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#cf142b" stroke-width="2"/><path d="M30,0 V30 M0,15 H60" stroke="#fff" stroke-width="10"/><path d="M30,0 V30 M0,15 H60" stroke="#cf142b" stroke-width="6"/></svg></span>ENG</button>
+          </span>
+          <button type="button" class="contact-btn" id="contactBtnDept" aria-label="Позвонить">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24 11.36 11.36 0 003.57.57 1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.49a1 1 0 011 1 11.36 11.36 0 00.57 3.57 1 1 0 01-.25 1.01z"/></svg>
+            <span class="contact-label" id="contactLabelDept">Контакт</span>
+          </button>
+        </div>
       </div>
     </header>
     <nav class="main-menu" id="deptMenu" aria-label="Выбор отдела">
       <button type="button" class="menu-tile" id="deptSalesBtn">
-        <span class="menu-tile-icon menu-tile-icon--dept-sales" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 7h11l-1.5 9a2 2 0 0 1-2 1.7H9.9a2 2 0 0 1-2-1.7L6 4H3"/><circle cx="10" cy="20" r="1.3" fill="currentColor" stroke="none"/><circle cx="17" cy="20" r="1.3" fill="currentColor" stroke="none"/></svg>
+        <span class="menu-tile-icon menu-tile-icon--dept-sales menu-tile-icon--sales-anim" id="salesIconWrap" aria-hidden="true">
+          <svg class="sales-icon-svg" viewBox="0 0 100 100">
+            <defs>
+              <linearGradient id="salesGradBlue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4AA3F0"/><stop offset="1" stop-color="#1E74C7"/></linearGradient>
+              <linearGradient id="salesGradGreen" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3FCE8A"/><stop offset="1" stop-color="#18A05C"/></linearGradient>
+              <linearGradient id="salesGradRed" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F26D62"/><stop offset="1" stop-color="#DB352A"/></linearGradient>
+              <linearGradient id="salesGradYellow" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFC24D"/><stop offset="1" stop-color="#F09A12"/></linearGradient>
+            </defs>
+            <line x1="6" y1="86" x2="90" y2="86" class="sales-baseline"/>
+            <g class="sales-bars"></g>
+            <path class="sales-arrow-path" d=""/>
+            <polygon class="sales-arrowhead" points="0,0 0,0 0,0"/>
+          </svg>
         </span>
         <span class="menu-tile-label" id="deptSalesLabel">Отдел Продажи</span>
       </button>
       <button type="button" class="menu-tile" id="deptSupplyBtn">
-        <span class="menu-tile-icon menu-tile-icon--dept-supply" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>
+        <span class="menu-tile-icon menu-tile-icon--dept-supply menu-tile-icon--supply-anim" id="supplyIconWrap" aria-hidden="true">
+          <svg class="supply-icon-svg" viewBox="0 0 100 100">
+            <defs>
+              <linearGradient id="sg-red-f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7a6b"/><stop offset="1" stop-color="#e8402e"/></linearGradient>
+              <linearGradient id="sg-green-f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6fe08a"/><stop offset="1" stop-color="#2fae52"/></linearGradient>
+              <linearGradient id="sg-blue-f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6fb3ff"/><stop offset="1" stop-color="#2f7fe0"/></linearGradient>
+            </defs>
+            <g class="supply-act1">
+              <ellipse cx="50" cy="83" rx="26" ry="4" fill="#1b2430" opacity="0.08"/>
+              <g class="supply-crane-rig">
+                <rect x="74" y="18" width="4" height="48" rx="1.4" fill="#9aa4b2"/>
+                <rect x="40" y="16" width="38" height="4" rx="1.4" fill="#b7bfca"/>
+                <rect x="40" y="16" width="4" height="4" fill="#8b94a1"/>
+                <g class="supply-trolley" transform="translate(50,20)">
+                  <rect x="-4" y="0" width="8" height="3" rx="1" fill="#6b7482"/>
+                  <line class="supply-cable" x1="0" y1="3" x2="0" y2="20" stroke="#6b7482" stroke-width="1.4"/>
+                  <path class="supply-hook" d="M -3 20 q 0 6 3 6 q 3 0 3 -6" fill="none" stroke="#6b7482" stroke-width="1.6" stroke-linecap="round"/>
+                </g>
+              </g>
+              <g class="supply-stack" transform="translate(50,0)">
+                <g class="supply-box supply-box-blue" transform="translate(0,78)">
+                  <polygon points="-15,-2 -9,-6 17,-6 11,-2" fill="#9fd0ff"/>
+                  <rect x="-15" y="-2" width="26" height="12" fill="url(#sg-blue-f)" rx="1"/>
+                  <polygon points="11,-2 17,-6 17,4 11,10" fill="#1f5fad"/>
+                  <line x1="-11" y1="4" x2="7" y2="4" stroke="#17417a" stroke-width="0.8" opacity="0.5"/>
+                </g>
+                <g class="supply-box supply-box-green" transform="translate(0,66)">
+                  <polygon points="-15,-2 -9,-6 17,-6 11,-2" fill="#a8eab9"/>
+                  <rect x="-15" y="-2" width="26" height="12" fill="url(#sg-green-f)" rx="1"/>
+                  <polygon points="11,-2 17,-6 17,4 11,10" fill="#1f7a3a"/>
+                  <line x1="-11" y1="4" x2="7" y2="4" stroke="#145c29" stroke-width="0.8" opacity="0.5"/>
+                </g>
+                <g class="supply-box supply-box-red" transform="translate(0,54)">
+                  <polygon points="-15,-2 -9,-6 17,-6 11,-2" fill="#ffb3a8"/>
+                  <rect x="-15" y="-2" width="26" height="12" fill="url(#sg-red-f)" rx="1"/>
+                  <polygon points="11,-2 17,-6 17,4 11,10" fill="#b02c1c"/>
+                  <line x1="-11" y1="4" x2="7" y2="4" stroke="#8c2415" stroke-width="0.8" opacity="0.5"/>
+                </g>
+              </g>
+            </g>
+            <g class="supply-act2" opacity="0" style="pointer-events:none;">
+              <ellipse cx="50" cy="83" rx="24" ry="4" fill="#1b2430" opacity="0.08"/>
+              <g class="supply-clipboard" transform="translate(50,48)">
+                <rect x="-22" y="-28" width="44" height="56" rx="4" fill="#f4f6f9" stroke="#c7cdd6" stroke-width="1.4"/>
+                <rect x="-9" y="-32" width="18" height="7" rx="2.5" fill="#aeb6c2"/>
+                <g class="supply-clip-rows">
+                  <g class="supply-cl-row" data-i="0" transform="translate(0,-14)"></g>
+                  <g class="supply-cl-row" data-i="1" transform="translate(0,-1)"></g>
+                  <g class="supply-cl-row" data-i="2" transform="translate(0,12)"></g>
+                  <g class="supply-cl-row" data-i="3" transform="translate(0,25)"></g>
+                </g>
+              </g>
+              <g class="supply-order-sheet" transform="translate(50,84)" opacity="0">
+                <rect x="-17" y="-9" width="34" height="18" rx="2" fill="#ffffff" stroke="#d7dbe2" stroke-width="1.2"/>
+                <text x="0" y="4" text-anchor="middle" font-size="9" font-weight="700" fill="#3a4350" font-family="Arial,Helvetica,sans-serif">Order</text>
+              </g>
+            </g>
+          </svg>
         </span>
         <span class="menu-tile-label" id="deptSupplyLabel">Отдел Снабжения</span>
       </button>
@@ -1749,7 +2032,18 @@
         <button class="back-btn" id="supplyBackBtn" aria-label="Назад">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
         </button>
+        <img class="mark home-logo" id="trtLogoSupply" data-nav="dept" src="data:image/png;base64,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" alt="TRT">
         <h1 id="supplyTitle">Отдел Снабжения</h1>
+        <div class="brand-actions">
+          <span class="lang-switch" id="langSwitch4">
+            <button class="lang-btn" data-lang="ru" aria-pressed="true" aria-label="Русский"><span class="flag"><svg viewBox="0 0 3 2" xmlns="http://www.w3.org/2000/svg"><rect width="3" height="0.667" y="0" fill="#fff"/><rect width="3" height="0.666" y="0.667" fill="#0039a6"/><rect width="3" height="0.667" y="1.333" fill="#d52b1e"/></svg></span>RU</button>
+            <button class="lang-btn" data-lang="en" aria-pressed="false" aria-label="English"><span class="flag"><svg viewBox="0 0 60 30" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="30" fill="#00247d"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#cf142b" stroke-width="2"/><path d="M30,0 V30 M0,15 H60" stroke="#fff" stroke-width="10"/><path d="M30,0 V30 M0,15 H60" stroke="#cf142b" stroke-width="6"/></svg></span>ENG</button>
+          </span>
+          <button type="button" class="contact-btn" id="contactBtnSupply" aria-label="Позвонить">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24 11.36 11.36 0 003.57.57 1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.49a1 1 0 011 1 11.36 11.36 0 00.57 3.57 1 1 0 01-.25 1.01z"/></svg>
+            <span class="contact-label" id="contactLabelSupply">Контакт</span>
+          </button>
+        </div>
       </div>
     </header>
     <nav class="main-menu" id="supplyMenu" aria-label="Категории снабжения">
@@ -1813,16 +2107,42 @@
     <div class="cargo-view" id="cargoStepResult" hidden>
       <div class="cargo-result-tabs" id="cargoResultTabs" hidden></div>
       <div class="cargo-canvas-wrap" id="cargoCanvasWrap">
-        <canvas id="cargoCanvas" width="800" height="560"></canvas>
-        <div class="cargo-canvas-controls">
-          <button type="button" class="cargo-canvas-btn" id="cargoResetViewBtn" aria-label="Сбросить вид">⟲</button>
+        <canvas id="cargoCanvas" width="1000" height="1025"></canvas>
+        <div class="cargo-canvas-legend" id="cargoCanvasLegend"></div>
+        <button type="button" class="cargo-edit-done-fs" id="cargoEditDoneFsBtn" aria-label="Готово">✕ Готово</button>
+        <div class="cargo-edit-panel" id="cargoEditPanel" hidden>
+          <span class="cep-name" id="cargoEditPanelName"></span>
+          <button type="button" id="cargoEditUpBtn">▲ Выше</button>
+          <button type="button" id="cargoEditDownBtn">▼ Ниже</button>
+          <button type="button" id="cargoEditLeftBtn">◀ Влево</button>
+          <button type="button" id="cargoEditRightBtn">▶ Вправо</button>
+          <button type="button" id="cargoEditFwdBtn">⇡ Вперёд</button>
+          <button type="button" id="cargoEditBackBtn">⇣ Назад</button>
+          <button type="button" id="cargoEditResetBtn">Сбросить</button>
         </div>
-        <div class="cargo-canvas-hint">Потяните — поворот, колесо/щипок — масштаб</div>
+        <div class="cargo-canvas-controls">
+          <button type="button" class="cargo-canvas-btn" id="cargoZoomInBtn" aria-label="Увеличить">+</button>
+          <button type="button" class="cargo-canvas-btn" id="cargoZoomOutBtn" aria-label="Уменьшить">−</button>
+          <button type="button" class="cargo-canvas-btn" id="cargoResetViewBtn" aria-label="Сбросить вид">⟲</button>
+          <button type="button" class="cargo-canvas-btn" id="cargoSelectBtn" aria-label="Выделить несколько">▭</button>
+          <button type="button" class="cargo-canvas-btn cargo-canvas-btn--undo" id="cargoUndoBtn" aria-label="Отмена" disabled>↶</button>
+          <button type="button" class="cargo-canvas-btn" id="cargoRedoBtn" aria-label="Вернуть" disabled>↷</button>
+          <button type="button" class="cargo-canvas-btn" id="cargoAutoSortBtn" aria-label="Авто-сортировка">⇅</button>
+          <button type="button" class="cargo-canvas-btn cargo-canvas-btn--rotate" id="cargoRotateUpBtn" aria-label="Повернуть вверх">▲</button>
+          <button type="button" class="cargo-canvas-btn" id="cargoRotateLeftBtn" aria-label="Повернуть влево">◀</button>
+          <button type="button" class="cargo-canvas-btn" id="cargoRotateDownBtn" aria-label="Повернуть вниз">▼</button>
+          <button type="button" class="cargo-canvas-btn" id="cargoRotateRightBtn" aria-label="Повернуть вправо">▶</button>
+        </div>
+        <div class="cargo-canvas-hint" id="cargoCanvasHint">Потяните — поворот, колесо/щипок — масштаб</div>
+        <div class="cargo-action-toast" id="cargoActionToast" hidden></div>
       </div>
       <div class="cargo-stats-row" id="cargoStatsRow"></div>
+      <div class="cargo-recap" id="cargoItemsRecap"></div>
+      <div class="cargo-variants-row" id="cargoVariantsRow" hidden></div>
       <div class="cargo-unplaced" id="cargoUnplaced" hidden></div>
       <div class="cargo-btn-row">
         <button type="button" class="cargo-btn-secondary" id="cargoResultBackBtn">Назад к вводу</button>
+        <button type="button" class="cargo-btn-secondary" id="cargoEditBtn">Редактировать</button>
         <button type="button" class="cargo-btn-secondary" id="cargoSaveBtn">Сохранить</button>
         <button type="button" class="proc-btn" id="cargoPdfBtn">Скачать PDF</button>
       </div>
@@ -3714,12 +4034,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
    'carsList','carsEmpty','carsMoreBtn','backBtn','carTitle','partsCount','partQ','partClearBtn','catChips',
    'partsLabel','partsListEl','partsEmpty','moreBtn','overlay','sheet','screenCars','screenParts',
    'carsTitle','ownToggleLabel','statTotalLabel','statOwnLabel','statCarsLabel','statTotalTag',
-   'screenDept','deptTitle','deptSalesBtn','deptSalesLabel','deptSupplyBtn','deptSupplyLabel',
+   'screenDept','deptTitle','deptSalesBtn','deptSalesLabel','salesIconWrap','deptSupplyBtn','deptSupplyLabel','supplyIconWrap',
    'screenSupply','supplyBackBtn','supplyTitle','supplyEmpty','supplyMenu','cargoNavBtn','cargoNavBtnLabel',
    'screenCargo','cargoBackBtn','cargoTitle','cargoStepDot1','cargoStepDot2','cargoStepDot3',
    'cargoStepContainer','cargoSavedWrap','cargoSavedList','cargoContainerList','cargoContainerNextBtn',
    'cargoStepItems','cargoItemsContainerSummary','cargoItemsList','cargoAddItemBtn','cargoItemsSummary','cargoItemsError','cargoItemsBackBtn','cargoCalcBtn',
-   'cargoStepResult','cargoResultTabs','cargoCanvas','cargoResetViewBtn','cargoStatsRow','cargoUnplaced','cargoResultBackBtn','cargoSaveBtn','cargoPdfBtn',
+   'cargoStepResult','cargoResultTabs','cargoCanvas','cargoCanvasLegend','cargoResetViewBtn','cargoZoomInBtn','cargoZoomOutBtn','cargoSelectBtn','cargoUndoBtn','cargoRedoBtn','cargoEditDoneFsBtn','cargoStatsRow','cargoItemsRecap','cargoAutoSortBtn','cargoRotateUpBtn','cargoRotateLeftBtn','cargoRotateDownBtn','cargoRotateRightBtn','cargoVariantsRow','cargoUnplaced','cargoResultBackBtn','cargoSaveBtn','cargoPdfBtn',
+   'cargoEditBtn','cargoEditPanel','cargoEditPanelName','cargoEditUpBtn','cargoEditDownBtn','cargoEditLeftBtn','cargoEditRightBtn','cargoEditFwdBtn','cargoEditBackBtn','cargoEditResetBtn','cargoCanvasHint','cargoCanvasWrap','cargoActionToast',
    'screenHome','homeTitle','homeBackBtn','carsBackBtn','carsNavBtn','carsNavBtnLabel',
    'procNavBtn','procNavBtnLabel','procIconWrap','screenProcessing','procBackBtn','procTitle','procModel','procModelLabel',
    'procModelHint','procQty','procQtyLabel','procRunBtn','procSummary','procResults','procEmpty','procPrintArea',
@@ -4166,8 +4487,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     if(el.supplyEmpty) el.supplyEmpty.textContent = t('supplyComingSoon');
     if(el.carsNavBtnLabel) el.carsNavBtnLabel.textContent = t('carsNavBtn');
     if(el.carsBackBtn) el.carsBackBtn.setAttribute('aria-label', t('backLabel'));
-    if(el.contactLabel) el.contactLabel.textContent = t('contactLabel');
-    if(el.contactBtn) el.contactBtn.setAttribute('aria-label', t('contactAria'));
+    Array.prototype.forEach.call(document.querySelectorAll('.contact-label'), function(lbl){ lbl.textContent = t('contactLabel'); });
+    Array.prototype.forEach.call(document.querySelectorAll('.contact-btn'), function(btn){ btn.setAttribute('aria-label', t('contactAria')); });
     if(el.contactToastTitle) el.contactToastTitle.textContent = t('contactToastTitle');
     if(el.contactToastNumbers){
       Array.prototype.forEach.call(el.contactToastNumbers.querySelectorAll('.toast-copy-btn'), function(btn){
@@ -4297,9 +4618,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     el.stats.hidden = false;
     applyStaticText();
 
-    if(el.contactBtn){
-      el.contactBtn.addEventListener('click', function(){ showContactToast(); });
-    }
+    Array.prototype.forEach.call(document.querySelectorAll('.contact-btn'), function(btn){
+      btn.addEventListener('click', function(){ showContactToast(); });
+    });
     if(el.contactToastNumbers){
       el.contactToastNumbers.addEventListener('click', function(e){
         var btn = e.target.closest ? e.target.closest('.toast-copy-btn') : null;
@@ -4388,6 +4709,54 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     if(el.cargoSaveBtn) el.cargoSaveBtn.addEventListener('click', function(){ cargoSavePlan(); });
     if(el.cargoPdfBtn) el.cargoPdfBtn.addEventListener('click', function(){ cargoExportPdf(); });
     if(el.cargoResetViewBtn) el.cargoResetViewBtn.addEventListener('click', function(){ cargoState.cam = {rotY:-0.6, rotX:0.32, zoom:1}; cargoDrawScene(); });
+    if(el.cargoZoomInBtn) el.cargoZoomInBtn.addEventListener('click', function(){ cargoState.cam.zoom = Math.min(CARGO_ZOOM_MAX, cargoState.cam.zoom*1.25); cargoDrawScene(); });
+    if(el.cargoZoomOutBtn) el.cargoZoomOutBtn.addEventListener('click', function(){ cargoState.cam.zoom = Math.max(CARGO_ZOOM_MIN, cargoState.cam.zoom/1.25); cargoDrawScene(); });
+    if(el.cargoSelectBtn) el.cargoSelectBtn.addEventListener('click', function(){ cargoToggleSelectMode(); });
+    if(el.cargoEditBtn) el.cargoEditBtn.addEventListener('click', function(){ cargoToggleEditMode(); });
+    if(el.cargoEditDoneFsBtn) el.cargoEditDoneFsBtn.addEventListener('click', function(){ cargoToggleEditMode(); });
+    if(el.cargoEditUpBtn) el.cargoEditUpBtn.addEventListener('click', function(){ cargoAdjustSelectedHeight(CARGO_HEIGHT_STEP); });
+    if(el.cargoEditDownBtn) el.cargoEditDownBtn.addEventListener('click', function(){ cargoAdjustSelectedHeight(-CARGO_HEIGHT_STEP); });
+    if(el.cargoEditLeftBtn) el.cargoEditLeftBtn.addEventListener('click', function(){ cargoAdjustSelectedHoriz(-CARGO_HORIZ_STEP); });
+    if(el.cargoEditRightBtn) el.cargoEditRightBtn.addEventListener('click', function(){ cargoAdjustSelectedHoriz(CARGO_HORIZ_STEP); });
+    if(el.cargoEditFwdBtn) el.cargoEditFwdBtn.addEventListener('click', function(){ cargoAdjustSelectedDepth(-CARGO_HORIZ_STEP); });
+    if(el.cargoEditBackBtn) el.cargoEditBackBtn.addEventListener('click', function(){ cargoAdjustSelectedDepth(CARGO_HORIZ_STEP); });
+    if(el.cargoEditResetBtn) el.cargoEditResetBtn.addEventListener('click', function(){ cargoResetSelectedPosition(); });
+    if(el.cargoUndoBtn) el.cargoUndoBtn.addEventListener('click', function(){ cargoUndo(); });
+    if(el.cargoRedoBtn) el.cargoRedoBtn.addEventListener('click', function(){ cargoRedo(); });
+    if(el.cargoAutoSortBtn) el.cargoAutoSortBtn.addEventListener('click', function(){ cargoAutoSortVariant(); });
+    // Explicit rotate buttons: in select-mode, dragging on empty canvas space starts a
+    // marquee instead of orbiting the camera (see pointerDown), so there'd otherwise be no way
+    // to turn the view at all while selecting. These nudge the same cam.rotY/rotX the drag-to-
+    // orbit gesture would, by a fixed step, and work in every mode (not just select-mode).
+    var CARGO_ROTATE_STEP = 0.28;
+    function cargoNudgeCam(dYaw, dPitch){
+      cargoState.cam.rotY += dYaw;
+      cargoState.cam.rotX = Math.max(-1.3, Math.min(1.3, cargoState.cam.rotX + dPitch));
+      cargoDrawScene();
+    }
+    if(el.cargoRotateUpBtn) el.cargoRotateUpBtn.addEventListener('click', function(){ cargoNudgeCam(0, -CARGO_ROTATE_STEP); });
+    if(el.cargoRotateDownBtn) el.cargoRotateDownBtn.addEventListener('click', function(){ cargoNudgeCam(0, CARGO_ROTATE_STEP); });
+    if(el.cargoRotateLeftBtn) el.cargoRotateLeftBtn.addEventListener('click', function(){ cargoNudgeCam(-CARGO_ROTATE_STEP, 0); });
+    if(el.cargoRotateRightBtn) el.cargoRotateRightBtn.addEventListener('click', function(){ cargoNudgeCam(CARGO_ROTATE_STEP, 0); });
+    // Desktop hover already shows each of these icon buttons' name via CSS (::after reading
+    // aria-label). Touch devices have no hover, so give every tap the same information as a
+    // brief, smooth "pop up, hold, drift upward, fade out" animation instead (.tip-pop class +
+    // the cargoTipPop keyframes) -- removed and re-added on each click so it replays every time,
+    // even on a rapid re-tap of the same button.
+    Array.prototype.forEach.call(document.querySelectorAll('.cargo-canvas-btn'), function(ccBtn){
+      ccBtn.addEventListener('click', function(){
+        ccBtn.classList.remove('tip-pop');
+        void ccBtn.offsetWidth;
+        ccBtn.classList.add('tip-pop');
+        setTimeout(function(){ ccBtn.classList.remove('tip-pop'); }, 900);
+      });
+    });
+    // Keep the canvas's backing resolution matched to the fullscreen edit overlay's actual box
+    // if the window is resized while editing (e.g. a desktop window dragged narrower) -- a no-op
+    // everywhere else, since cargoSyncCanvasResolution() only acts in that one mode.
+    window.addEventListener('resize', function(){
+      if(cargoState.editMode){ cargoSyncCanvasResolution(); cargoDrawScene(); }
+    });
     el.overlay.addEventListener('click', function(e){ if(e.target===el.overlay) closeSheet(); });
     document.addEventListener('keydown', function(e){ if(e.key==='Escape'){ if(!el.lightbox.hidden) closeLightbox(); else if(!el.overlay.hidden) closeSheet(); else if(state.view==='parts') goToCars(); else if(state.view==='processing') goToHomeScreen(); else if(state.view==='warehouse') goToCars(); else if(state.view==='home') goToDeptScreen(); else if(state.view==='supply') goToDeptScreen(); else if(state.view==='cargo') cargoBack(); } });
 
@@ -4487,9 +4856,17 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     if(el.trainingRetryBtn) el.trainingRetryBtn.addEventListener('click', function(){ retryTrainingStage(); });
     if(el.trainingToStagesBtn) el.trainingToStagesBtn.addEventListener('click', function(){ showTrainingSubview('stages'); renderTrainingStages(); });
 
-    // Tapping the TRT logo, wherever it appears, jumps straight home.
+    // Tapping the TRT logo normally jumps to this department's own home
+    // screen. Instances on the top-level department-choice screen, or inside
+    // a different department (e.g. Отдел Снабжения), opt out via
+    // data-nav so they never pull in Sales-dept-specific state via goHome().
     Array.prototype.forEach.call(document.querySelectorAll('.home-logo'), function(logo){
-      logo.addEventListener('click', goHome);
+      logo.addEventListener('click', function(){
+        var nav = logo.getAttribute('data-nav');
+        if(nav === 'dept') goToDeptScreen();
+        else if(nav === 'dept-direct') showDeptScreen();
+        else goHome();
+      });
     });
 
     window.addEventListener('popstate', function(e){
@@ -4763,10 +5140,27 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     { id: '40hq', name: "40' HQ", full: "40' HQ (увеличенный)", length: 1203.2, width: 235.2, height: 269.8, maxPayload: 26500 },
     { id: '45hq', name: "45' HQ (увеличенный)", full: "45' HQ (увеличенный)", length: 1355.6, width: 235.2, height: 269.8, maxPayload: 27700 }
   ];
+  // Zoom now multiplies on top of a scale that already fits the current canvas and orientation
+  // (see the fitW/fitH computation in cargoDrawScene), instead of on top of a fixed, conservative
+  // Math.min(W,H)*0.34 baseline -- so zoom=1 is already "nicely filled". Max was 3x; doubled to
+  // 6x per request, for more headroom to inspect a tightly packed cluster of small boxes close up.
+  var CARGO_ZOOM_MIN = 0.4, CARGO_ZOOM_MAX = 6;
   var cargoState = {
     step: 1, containerId: null, items: [], itemSeq: 0, result: null, activeContainerIdx: 0,
-    cam: { rotY: -0.6, rotX: 0.32, zoom: 1 }, canvasInit: false
+    cam: { rotY: -0.6, rotX: 0.32, zoom: 1 }, canvasInit: false,
+    editMode: false, selectMode: false, selectedBoxId: null, selectedBoxIds: [], editDrag: null, marquee: null, _view: null,
+    variants: [], autoSortIdx: 0, variantSeq: 0,
+    undoStack: [], redoStack: []
   };
+  var CARGO_SORT_STRATEGIES = [
+    { label: 'Сначала самые объёмные', cmp: function(a,b){ var va=a.length*a.width*a.height, vb=b.length*b.width*b.height; if(vb!==va) return vb-va; return Math.max(b.length,b.width,b.height)-Math.max(a.length,a.width,a.height); } },
+    { label: 'Сначала самые тяжёлые', cmp: function(a,b){ return b.weight - a.weight; } },
+    { label: 'Сначала с большим основанием', cmp: function(a,b){ return (b.length*b.width) - (a.length*a.width); } },
+    { label: 'Сначала самые высокие', cmp: function(a,b){ return b.height - a.height; } },
+    { label: 'Сначала самые длинные', cmp: function(a,b){ return b.length - a.length; } },
+    { label: 'Сначала самые лёгкие', cmp: function(a,b){ return a.weight - b.weight; } },
+    { label: 'В порядке ввода', cmp: function(){ return 0; } }
+  ];
   function cargoGetContainer(id){
     for(var i=0;i<CARGO_CONTAINERS.length;i++) if(CARGO_CONTAINERS[i].id===id) return CARGO_CONTAINERS[i];
     return null;
@@ -4811,10 +5205,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   }
   function cargoVolumeOf(s){ return s.l*s.w*s.h; }
   var CARGO_PALETTE = ['#D00101','#1E7B34','#3451C6','#8A5A00','#A6620E','#0E8C9E','#7A3BAE','#C2622A','#4A7F2E','#B0325C'];
-  function cargoPack(container, cargoList){
+  function cargoPack(container, cargoList, sortCmp){
     var CL=+container.length, CW=+container.width, CH=+container.height, CAP=+container.maxPayload;
     var instances = cargoExpandInstances(cargoList);
-    instances.sort(function(a,b){
+    instances.sort(sortCmp || function(a,b){
       var va=a.length*a.width*a.height, vb=b.length*b.width*b.height;
       if(vb!==va) return vb-va;
       return Math.max(b.length,b.width,b.height) - Math.max(a.length,a.width,a.height);
@@ -5065,6 +5459,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     return null;
   }
   function cargoGoToStep(n, skipScroll){
+    if(n!==3) cargoExitEditMode();
     cargoState.step = n;
     [1,2,3].forEach(function(s){
       var dot = el['cargoStepDot'+s];
@@ -5091,10 +5486,33 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       return { id: it.uid, name: it.name, type: it.type, qty: it.qty, length: it.length, width: it.width, height: it.height, weight: it.weight, orientation: it.orientation, stackable: it.stackable };
     });
     cargoState.result = cargoPack(container, cargoList);
+    cargoState.result.containers.forEach(function(ctr){
+      ctr.placements.forEach(function(p){ p._orig = {x:p.x, y:p.y, z:p.z}; });
+    });
+    cargoState.result.colorByCargoId = {};
+    cargoState.result.containers.forEach(function(ctr){
+      ctr.placements.forEach(function(p){
+        if(!cargoState.result.colorByCargoId[p.cargoId]) cargoState.result.colorByCargoId[p.cargoId] = p.color;
+      });
+    });
     cargoState.activeContainerIdx = 0;
+    cargoState.editMode = false;
+    cargoState.selectMode = false;
+    cargoState.selectedBoxId = null;
+    cargoState.selectedBoxIds = [];
+    cargoState.editDrag = null;
+    cargoState.marquee = null;
+    cargoState.variants = [];
+    cargoState.autoSortIdx = 0;
+    cargoState.variantSeq = 0;
+    cargoState.undoStack = [];
+    cargoState.redoStack = [];
     cargoGoToStep(3);
   }
-  function cargoStatTile(n,l){ return '<div class="cargo-stat"><div class="cs-n">'+n+'</div><div class="cs-l">'+esc(l)+'</div></div>'; }
+  function cargoStatTile(n,l,sub){ return '<div class="cargo-stat"><div class="cs-n">'+n+'</div><div class="cs-l">'+esc(l)+'</div>'+(sub?('<div class="cs-sub">'+esc(sub)+'</div>'):'')+'</div>'; }
+  function cargoFmtKg(kg){ return Math.round(kg).toLocaleString('ru-RU')+' кг'; }
+  function cargoFmtM3(cm3){ return (cm3/1e6).toLocaleString('ru-RU',{minimumFractionDigits:1,maximumFractionDigits:1})+' м³'; }
+  function cargoTypeLabel(type){ return type==='pallet' ? 'Паллета' : (type==='carton' ? 'Короб' : 'Другое'); }
   function cargoRenderResult(){
     var res = cargoState.result;
     if(!res) return;
@@ -5107,7 +5525,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
           b.type='button';
           b.className='cargo-result-tab'+(idx===cargoState.activeContainerIdx?' sel':'');
           b.textContent = 'Контейнер '+c.index;
-          b.addEventListener('click', function(){ cargoState.activeContainerIdx = idx; cargoRenderResult(); });
+          b.addEventListener('click', function(){ cargoState.activeContainerIdx = idx; cargoState.selectedBoxId = null; cargoState.selectedBoxIds = []; cargoState.editDrag = null; cargoState.marquee = null; cargoState.undoStack = []; cargoState.redoStack = []; cargoRenderResult(); });
           el.cargoResultTabs.appendChild(b);
         });
       } else {
@@ -5117,9 +5535,36 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     if(el.cargoStatsRow){
       var t = res.totals;
       el.cargoStatsRow.innerHTML =
-        cargoStatTile((t.fillRate*100).toFixed(0)+'%','Заполнение объёма') +
-        cargoStatTile((t.payloadRatio*100).toFixed(0)+'%','Использ. грузоподъёмности') +
+        cargoStatTile((t.fillRate*100).toFixed(0)+'%','Заполнение объёма', cargoFmtM3(t.volumeUsed)) +
+        cargoStatTile((t.payloadRatio*100).toFixed(0)+'%','Использ. грузоподъёмности', cargoFmtKg(t.weightUsed)) +
         cargoStatTile(String(t.containerCount),'Контейнер(ов) нужно');
+    }
+    if(el.cargoCanvasLegend){
+      // Color -> name key floated over the canvas ("как справка"), since box names are no
+      // longer printed on the boxes themselves -- see cargoDrawScene. One chip per distinct
+      // name (not per cargoId/uid), so two line items sharing a name/color collapse into one.
+      var colorMap1 = res.colorByCargoId || {};
+      var seenNames1 = {};
+      var chips1 = [];
+      (cargoState.items||[]).forEach(function(it){
+        var nm = it.name || '—';
+        if(seenNames1[nm]) return;
+        seenNames1[nm] = true;
+        var clr1 = colorMap1[it.uid] || '#8a8f98';
+        chips1.push('<span class="ccl-chip"><span class="ccl-dot" style="--ccl-color:'+clr1+';"></span>'+esc(nm)+'</span>');
+      });
+      el.cargoCanvasLegend.innerHTML = chips1.join('');
+    }
+    if(el.cargoItemsRecap){
+      var colorMap2 = res.colorByCargoId || {};
+      el.cargoItemsRecap.innerHTML = (cargoState.items||[]).map(function(it){
+        var clr = colorMap2[it.uid] || '#8a8f98';
+        return '<div class="cargo-recap-row" style="--rc-color:'+clr+';">'+
+          '<span class="crr-name">'+esc(it.name||'—')+'</span>'+
+          '<span class="crr-pill">'+esc(cargoTypeLabel(it.type))+'</span>'+
+          '<span class="crr-qty">'+esc(String(it.qty))+' шт</span>'+
+        '</div>';
+      }).join('');
     }
     if(el.cargoUnplaced){
       if(res.unplaced.length>0){
@@ -5129,8 +5574,97 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
         el.cargoUnplaced.hidden = true;
       }
     }
+    cargoRenderVariants();
     cargoInitCanvasInteraction();
     cargoDrawScene();
+    cargoUpdateEditPanel();
+    cargoUpdateUndoRedoButtons();
+  }
+  // Fingerprint of where every piece of cargo physically ended up (per-container, position
+  // rounded to 0.1 world units, independent of placement array order) -- used to recognize when
+  // a freshly-computed auto-sort result is actually identical to a variant already shown (the
+  // only possible outcome once there's just one item/qty, since no comparator can change a
+  // single box's placement), so a click on "Авто-сортировка" doesn't keep spawning pointless
+  // duplicate "Вариант-N" cards for a layout the user already has in front of them.
+  function cargoPlacementSignature(result){
+    if(!result || !result.containers) return '';
+    return result.containers.map(function(ctr){
+      return (ctr.placements||[]).map(function(p){
+        return p.cargoId+':'+Math.round(p.x*10)+','+Math.round(p.y*10)+','+Math.round(p.z*10);
+      }).sort().join(';');
+    }).join('|');
+  }
+  function cargoAutoSortVariant(){
+    var container = cargoGetContainer(cargoState.containerId);
+    if(!container || !cargoState.items || !cargoState.items.length) return;
+    var cargoList = cargoState.items.map(function(it){
+      return { id: it.uid, name: it.name, type: it.type, qty: it.qty, length: it.length, width: it.width, height: it.height, weight: it.weight, orientation: it.orientation, stackable: it.stackable };
+    });
+    var strat = CARGO_SORT_STRATEGIES[cargoState.autoSortIdx % CARGO_SORT_STRATEGIES.length];
+    cargoState.autoSortIdx++;
+    var result = cargoPack(container, cargoList, strat.cmp);
+    result.containers.forEach(function(ctr){ ctr.placements.forEach(function(p){ p._orig = {x:p.x, y:p.y, z:p.z}; }); });
+    result.colorByCargoId = {};
+    result.containers.forEach(function(ctr){
+      ctr.placements.forEach(function(p){ if(!result.colorByCargoId[p.cargoId]) result.colorByCargoId[p.cargoId] = p.color; });
+    });
+    var sig = cargoPlacementSignature(result);
+    var dup = cargoState.variants.filter(function(v){ return v.sig === sig; })[0];
+    if(dup){
+      // Same physical arrangement as an existing variant (e.g. only one item, so sort order
+      // can't actually change anything) -- don't add a redundant card, just draw attention to
+      // the one that's already there.
+      cargoFlashVariantCard(dup.id);
+      return;
+    }
+    cargoState.variantSeq = (cargoState.variantSeq||0) + 1;
+    cargoState.variants.push({ id:'v'+cargoState.variantSeq, n:cargoState.variantSeq, label:strat.label, result:result, sig:sig });
+    cargoRenderVariants();
+  }
+  function cargoFlashVariantCard(vid){
+    if(!el.cargoVariantsRow) return;
+    var card = el.cargoVariantsRow.querySelector('.cargo-variant-card[data-vid="'+vid+'"]');
+    if(!card) return;
+    card.classList.remove('cvc-flash');
+    void card.offsetWidth; // restart the animation even if it's still mid-flash from a moment ago
+    card.classList.add('cvc-flash');
+    card.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'nearest' });
+    setTimeout(function(){ card.classList.remove('cvc-flash'); }, 900);
+  }
+  function cargoRenderVariants(){
+    if(!el.cargoVariantsRow) return;
+    if(!cargoState.variants.length){ el.cargoVariantsRow.innerHTML=''; el.cargoVariantsRow.hidden = true; return; }
+    el.cargoVariantsRow.hidden = false;
+    el.cargoVariantsRow.innerHTML = cargoState.variants.map(function(v){
+      var t = v.result.totals;
+      return '<div class="cargo-variant-card" data-vid="'+esc(v.id)+'">'+
+        '<div class="cvc-head"><span class="cvc-title">Вариант-'+v.n+'</span><button type="button" class="cvc-del" data-vid="'+esc(v.id)+'" aria-label="Удалить вариант">✕</button></div>'+
+        '<div class="cvc-sub">'+esc(v.label)+'</div>'+
+        '<div class="cvc-stats">'+(t.fillRate*100).toFixed(0)+'% объём · '+String(t.containerCount)+' конт.</div>'+
+        '<button type="button" class="cvc-open" data-vid="'+esc(v.id)+'">Открыть</button>'+
+      '</div>';
+    }).join('');
+    Array.prototype.forEach.call(el.cargoVariantsRow.querySelectorAll('.cvc-del'), function(btn){
+      btn.addEventListener('click', function(ev){
+        if(ev && ev.stopPropagation) ev.stopPropagation();
+        var vid = btn.getAttribute('data-vid');
+        cargoState.variants = cargoState.variants.filter(function(v){ return v.id !== vid; });
+        cargoRenderVariants();
+      });
+    });
+    Array.prototype.forEach.call(el.cargoVariantsRow.querySelectorAll('.cvc-open'), function(btn){
+      btn.addEventListener('click', function(){
+        var vid = btn.getAttribute('data-vid');
+        var v = cargoState.variants.filter(function(vv){ return vv.id===vid; })[0];
+        if(!v) return;
+        cargoState.result = v.result;
+        cargoState.activeContainerIdx = 0;
+        cargoState.undoStack = [];
+        cargoState.redoStack = [];
+        cargoExitEditMode();
+        cargoRenderResult();
+      });
+    });
   }
   function cargoProject(p, cx, cy, center, yaw, pitch, scale, focal){
     var dx=p.x-center.x, dy=p.y-center.y, dz=p.z-center.z;
@@ -5151,6 +5685,40 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     var z2 = y1*Math.sin(pitch) + z1*Math.cos(pitch);
     return { x:x1, y:y2, z:z2 };
   }
+  // Inverse of cargoProject, constrained to a fixed horizontal world plane (z = worldZ):
+  // given a screen point, returns the world (x,y) on that plane that projects there, under the
+  // SAME yaw/pitch/perspective camera model cargoProject uses. This is what lets box dragging
+  // track the mouse accurately at ANY camera angle (see pointerDown/pointerMove below). The old
+  // drag code only ever read the mouse's horizontal screen movement, which silently stopped
+  // driving one of the two floor axes whenever that axis happened to project mostly onto the
+  // screen's VERTICAL direction (steep pitch, or certain yaw angles) -- "up/down does nothing"
+  // per user report, at exactly angles like a near top-down container view. Solved in closed
+  // form (no iteration, no per-frame drift): substituting the perspective-divided screen
+  // coordinates through the yaw-then-pitch rotation collapses to one linear equation in the
+  // point's camera-space depth (y2), which is solved directly below.
+  function cargoUnprojectPoint(view, worldZ, sx, sy){
+    if(!view) return null;
+    var pitch = view.pitch, focal = view.focal, yaw = view.yaw, scale = view.scale || 1;
+    var SX = (sx - view.cx) / scale;
+    var SY = (view.cy - sy) / scale;
+    var Z0 = worldZ - view.center.z;
+    // A perfectly level camera (pitch ~ 0) can't resolve the "toward/away from camera" floor
+    // axis from vertical screen movement at all -- that axis would move straight along the view
+    // ray, invisibly. Clamp away from that true singularity so the solve stays numerically
+    // stable; right at that angle the mapping just degrades gracefully instead of blowing up.
+    var sinP = Math.sin(pitch), cosP = Math.cos(pitch);
+    var sinPClamped = Math.abs(sinP) < 0.12 ? (sinP < 0 ? -0.12 : 0.12) : sinP;
+    var cotP = cosP / sinPClamped;
+    var C = SY * cotP / focal;
+    if(Math.abs(1 - C) < 1e-6) return null;
+    var y2 = (C*focal - Z0/sinPClamped) / (1 - C);
+    var z2 = SY * (focal + y2) / focal;
+    var y1 = (z2 - Z0*cosP) / sinPClamped;
+    var x1 = SX * (focal + y2) / focal;
+    var dx = x1*Math.cos(yaw) + y1*Math.sin(yaw);
+    var dy = -x1*Math.sin(yaw) + y1*Math.cos(yaw);
+    return { x: dx + view.center.x, y: dy + view.center.y };
+  }
   function cargoShadeColor(hex, shade){
     var r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
     r=Math.round(r*shade); g=Math.round(g*shade); b=Math.round(b*shade);
@@ -5162,28 +5730,76 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     var ctx = canvas.getContext('2d');
     var W = canvas.width, H = canvas.height;
     ctx.clearRect(0,0,W,H);
-    ctx.fillStyle = '#10151d';
+    ctx.fillStyle = '#ffffff';
     ctx.fillRect(0,0,W,H);
     var res = cargoState.result;
     if(!res || !res.containers.length) return;
     var c = res.containers[cargoState.activeContainerIdx] || res.containers[0];
     var container = cargoGetContainer(cargoState.containerId);
     if(!container) return;
-    var center = { x: container.length/2, y: container.width/2, z: container.height/2 };
+    var containerCenter = { x: container.length/2, y: container.width/2, z: container.height/2 };
+    var cargoCenter = containerCenter;
+    if(c.placements && c.placements.length){
+      var pMinX=Infinity,pMaxX=-Infinity,pMinY=Infinity,pMaxY=-Infinity,pMinZ=Infinity,pMaxZ=-Infinity;
+      c.placements.forEach(function(p){
+        if(p.x<pMinX) pMinX=p.x; if(p.x+p.l>pMaxX) pMaxX=p.x+p.l;
+        if(p.y<pMinY) pMinY=p.y; if(p.y+p.w>pMaxY) pMaxY=p.y+p.w;
+        if(p.z<pMinZ) pMinZ=p.z; if(p.z+p.h>pMaxZ) pMaxZ=p.z+p.h;
+      });
+      cargoCenter = { x:(pMinX+pMaxX)/2, y:(pMinY+pMaxY)/2, z:(pMinZ+pMaxZ)/2 };
+    }
+    // As the view zooms in past 1x, blend the camera's pivot from the container's raw geometric
+    // center toward the actual cargo's bounding-box center. Without this, zooming in on a long or
+    // thin container with cargo bunched at one end zooms into empty space at the container's
+    // midpoint, and the outer wireframe -- the only thing left on screen -- rushes past the canvas
+    // edges, which reads as "the boundary disappeared". Blending keeps the loaded cargo in frame
+    // at any zoom level, in both the compact and fullscreen editors. At zoom<=1 this is a no-op
+    // (identical to the previous container-center framing), so the default/overview look is unchanged.
+    var zoomT = Math.max(0, Math.min(1, (cargoState.cam.zoom - 1) / (CARGO_ZOOM_MAX - 1)));
+    var center = {
+      x: containerCenter.x + (cargoCenter.x - containerCenter.x) * zoomT,
+      y: containerCenter.y + (cargoCenter.y - containerCenter.y) * zoomT,
+      z: containerCenter.z + (cargoCenter.z - containerCenter.z) * zoomT
+    };
     var maxDim = Math.max(container.length, container.width, container.height);
     var focal = maxDim*2.4;
-    var scale = (Math.min(W,H)*0.34 / maxDim) * cargoState.cam.zoom;
-    var cx = W/2, cy = H/2 + Math.min(W,H)*0.06;
     var yaw = cargoState.cam.rotY, pitch = cargoState.cam.rotX;
-    function proj(p){ return cargoProject(p, cx, cy, center, yaw, pitch, scale, focal); }
     var CL=container.length, CW=container.width, CH=container.height;
     var corners = [
       {x:0,y:0,z:0},{x:CL,y:0,z:0},{x:CL,y:CW,z:0},{x:0,y:CW,z:0},
       {x:0,y:0,z:CH},{x:CL,y:0,z:CH},{x:CL,y:CW,z:CH},{x:0,y:CW,z:CH}
     ];
     var edges = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+    // Fit the base scale (before the user's own zoom multiplier) to the canvas's ACTUAL width
+    // and height, not a fixed fraction of whichever one happens to be smaller. The old
+    // `Math.min(W,H)*0.34` formula meant a wide canvas (the fullscreen desktop edit overlay)
+    // never used its extra width: the container always rendered at roughly the size it would
+    // on a square canvas, leaving large empty margins left and right. Measuring the actual
+    // projected extents of the container (and the cargo's own bounding box, so a box dragged
+    // outside the container -- the "in the air" relaxed-bounds feature -- still stays in frame)
+    // at a neutral scale of 1, then fitting THAT into W and H independently, makes a wide
+    // canvas actually fill with content edge-to-edge instead of staying square-ish in the middle.
+    function projUnit(p){ return cargoProject(p, 0, 0, center, yaw, pitch, 1, focal); }
+    var fitPts = corners.slice();
+    if(c.placements && c.placements.length){
+      fitPts.push(
+        {x:pMinX,y:pMinY,z:pMinZ},{x:pMaxX,y:pMinY,z:pMinZ},{x:pMinX,y:pMaxY,z:pMinZ},{x:pMaxX,y:pMaxY,z:pMinZ},
+        {x:pMinX,y:pMinY,z:pMaxZ},{x:pMaxX,y:pMinY,z:pMaxZ},{x:pMinX,y:pMaxY,z:pMaxZ},{x:pMaxX,y:pMaxY,z:pMaxZ}
+      );
+    }
+    var fitMinX=Infinity,fitMaxX=-Infinity,fitMinY=Infinity,fitMaxY=-Infinity;
+    fitPts.forEach(function(p){
+      var up = projUnit(p);
+      if(up.sx<fitMinX) fitMinX=up.sx; if(up.sx>fitMaxX) fitMaxX=up.sx;
+      if(up.sy<fitMinY) fitMinY=up.sy; if(up.sy>fitMaxY) fitMaxY=up.sy;
+    });
+    var fitW = Math.max(1, fitMaxX-fitMinX), fitH = Math.max(1, fitMaxY-fitMinY);
+    var scale = Math.min(W*0.80/fitW, H*0.68/fitH) * cargoState.cam.zoom;
+    var cx = W/2, cy = H/2 + Math.min(W,H)*0.06;
+    function proj(p){ return cargoProject(p, cx, cy, center, yaw, pitch, scale, focal); }
+    cargoState._view = { cx:cx, cy:cy, center:center, yaw:yaw, pitch:pitch, scale:scale, focal:focal, container:container, placements:c.placements };
     var pc = corners.map(proj);
-    ctx.strokeStyle = 'rgba(255,255,255,.55)';
+    ctx.strokeStyle = 'rgba(20,24,30,.75)';
     ctx.lineWidth = 1.3;
     edges.forEach(function(e){
       ctx.beginPath();
@@ -5191,13 +5807,80 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       ctx.lineTo(pc[e[1]].sx, pc[e[1]].sy);
       ctx.stroke();
     });
+    // Floor shadow(s) for every box currently being dragged (a single box, or a whole
+    // multi-select group moving together).
+    if(cargoState.editDrag){
+      var dragIds0 = cargoState.editDrag.ids || [];
+      dragIds0.forEach(function(did){
+        var dragBox = c.placements.filter(function(p){ return p.id === did; })[0];
+        if(!dragBox) return;
+        var fx=dragBox.x, fy=dragBox.y, fl=dragBox.l, fw=dragBox.w;
+        var floorPts = [
+          proj({x:fx,y:fy,z:0}), proj({x:fx+fl,y:fy,z:0}),
+          proj({x:fx+fl,y:fy+fw,z:0}), proj({x:fx,y:fy+fw,z:0})
+        ];
+        ctx.beginPath();
+        ctx.moveTo(floorPts[0].sx, floorPts[0].sy);
+        for(var fi=1; fi<floorPts.length; fi++) ctx.lineTo(floorPts[fi].sx, floorPts[fi].sy);
+        ctx.closePath();
+        // A dedicated cyan/blue color (distinct from the plain green "valid" state) while the drag
+        // is actively snapped to a wall, the floor/ceiling, or a neighboring box on at least one
+        // axis -- requested as a visual aid so moving/sorting cargo shows when it's catching a
+        // flush alignment, not just whether the move is allowed.
+        var isSnapping = !cargoState.editDrag.invalid && !cargoState.editDrag.outside && cargoState.editDrag.snap &&
+          (cargoState.editDrag.snap.x || cargoState.editDrag.snap.y || cargoState.editDrag.snap.z);
+        var dFill = cargoState.editDrag.invalid ? 'rgba(255,59,48,.22)' : (cargoState.editDrag.outside ? 'rgba(199,138,0,.22)' : (isSnapping ? 'rgba(14,165,233,.28)' : 'rgba(34,197,94,.28)'));
+        var dStroke = cargoState.editDrag.invalid ? 'rgba(255,59,48,.7)' : (cargoState.editDrag.outside ? 'rgba(199,138,0,.7)' : (isSnapping ? 'rgba(14,165,233,.9)' : 'rgba(22,163,74,.85)'));
+        ctx.fillStyle = dFill;
+        ctx.fill();
+        ctx.strokeStyle = dStroke;
+        ctx.lineWidth = 1.3;
+        ctx.setLineDash([4,3]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        // A plumb line from the box's current (possibly airborne) position straight down to its
+        // floor shadow, so the shadow reads as clearly "belonging" to the box instead of looking
+        // like a separate, disconnected shape once the box has been lifted any real height.
+        var fz = dragBox.z;
+        if(fz > 1){
+          var topMid = proj({x:fx+fl/2, y:fy+fw/2, z:fz});
+          var floorMid = proj({x:fx+fl/2, y:fy+fw/2, z:0});
+          ctx.beginPath();
+          ctx.moveTo(topMid.sx, topMid.sy);
+          ctx.lineTo(floorMid.sx, floorMid.sy);
+          ctx.strokeStyle = dStroke;
+          ctx.lineWidth = 1.1;
+          ctx.setLineDash([3,3]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.beginPath();
+          ctx.arc(floorMid.sx, floorMid.sy, 2.6, 0, Math.PI*2);
+          ctx.fillStyle = dStroke;
+          ctx.fill();
+        }
+      });
+    }
     var faces = [];
-    c.placements.forEach(function(pl){
+    var selEdgeList = [];
+    var selSet = {};
+    (cargoState.selectedBoxIds||[]).forEach(function(id){ selSet[id]=true; });
+    var dragSet = {};
+    if(cargoState.editDrag) (cargoState.editDrag.ids||[]).forEach(function(id){ dragSet[id]=true; });
+    c.placements.forEach(function(pl, plIdx){
       var x=pl.x,y=pl.y,z=pl.z,l=pl.l,w=pl.w,h=pl.h;
+      var isSel = !!(cargoState.editMode && selSet[pl.id]);
+      var isDragging = !!(cargoState.editDrag && dragSet[pl.id]);
+      var isInvalid = isDragging && !!cargoState.editDrag.invalid;
+      var isOutside = isDragging && !cargoState.editDrag.invalid && !!cargoState.editDrag.outside;
+      var isSnapping = isDragging && !isInvalid && !isOutside && cargoState.editDrag.snap &&
+        (cargoState.editDrag.snap.x || cargoState.editDrag.snap.y || cargoState.editDrag.snap.z);
       var cc = {
         c000:{x:x,y:y,z:z}, c100:{x:x+l,y:y,z:z}, c010:{x:x,y:y+w,z:z}, c110:{x:x+l,y:y+w,z:z},
         c001:{x:x,y:y,z:z+h}, c101:{x:x+l,y:y,z:z+h}, c011:{x:x,y:y+w,z:z+h}, c111:{x:x+l,y:y+w,z:z+h}
       };
+      if(isSel){
+        selEdgeList.push({ pts:[cc.c000,cc.c100,cc.c110,cc.c010,cc.c001,cc.c101,cc.c111,cc.c011].map(proj), invalid:isInvalid, snap:isSnapping });
+      }
       var defs = [
         { pts:[cc.c100,cc.c110,cc.c111,cc.c101], n:{x:1,y:0,z:0} },
         { pts:[cc.c000,cc.c001,cc.c011,cc.c010], n:{x:-1,y:0,z:0} },
@@ -5212,21 +5895,51 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
         var pts2d = d.pts.map(proj);
         var depth = (pts2d[0].depth+pts2d[1].depth+pts2d[2].depth+pts2d[3].depth)/4;
         var shade = 0.52 + 0.46*Math.min(1,Math.max(0,-rn.y));
-        faces.push({ pts: pts2d, depth: depth, color: pl.color, shade: shade });
+        faces.push({ pts: pts2d, depth: depth, color: pl.color, shade: shade, sel:isSel, invalid:isInvalid, outside:isOutside });
       });
     });
     faces.sort(function(a,b){ return b.depth - a.depth; });
+    // No name/number text is drawn on the boxes themselves -- at any real density it just
+    // overlapped into an unreadable mess (and even legible, it crowded out the shape of the
+    // load). Which cargo is which color is answered once, compactly, by the color legend
+    // floated over the canvas (cargoCanvasLegend, populated in cargoRenderResult) instead.
     faces.forEach(function(f){
       ctx.beginPath();
       ctx.moveTo(f.pts[0].sx, f.pts[0].sy);
       for(var i=1;i<f.pts.length;i++) ctx.lineTo(f.pts[i].sx, f.pts[i].sy);
       ctx.closePath();
-      ctx.fillStyle = cargoShadeColor(f.color, f.shade);
+      ctx.fillStyle = f.invalid ? cargoShadeColor('#ff3b30', f.shade) : (f.outside ? cargoShadeColor('#c78a00', f.shade) : cargoShadeColor(f.color, f.shade));
       ctx.fill();
-      ctx.strokeStyle = 'rgba(0,0,0,.35)';
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = f.sel ? (f.invalid ? 'rgba(255,255,255,.95)' : 'rgba(199,138,0,.95)') : 'rgba(0,0,0,.35)';
+      ctx.lineWidth = f.sel ? 2.4 : 1;
       ctx.stroke();
     });
+    var bEdges = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+    selEdgeList.forEach(function(selEdgePts){
+      ctx.strokeStyle = selEdgePts.invalid ? 'rgba(255,59,48,.95)' : (selEdgePts.snap ? 'rgba(14,165,233,.95)' : 'rgba(199,138,0,.95)');
+      ctx.lineWidth = 2.2;
+      ctx.setLineDash(selEdgePts.invalid ? [5,4] : []);
+      bEdges.forEach(function(e){
+        ctx.beginPath();
+        ctx.moveTo(selEdgePts.pts[e[0]].sx, selEdgePts.pts[e[0]].sy);
+        ctx.lineTo(selEdgePts.pts[e[1]].sx, selEdgePts.pts[e[1]].sy);
+        ctx.stroke();
+      });
+      ctx.setLineDash([]);
+    });
+    // Marquee (rubber-band) selection rectangle, drawn last so it sits on top of everything.
+    if(cargoState.marquee){
+      var m = cargoState.marquee;
+      var mx0 = Math.min(m.sx0, m.sx1), my0 = Math.min(m.sy0, m.sy1);
+      var mw = Math.abs(m.sx1-m.sx0), mh = Math.abs(m.sy1-m.sy0);
+      ctx.fillStyle = 'rgba(30,95,168,.14)';
+      ctx.fillRect(mx0, my0, mw, mh);
+      ctx.strokeStyle = 'rgba(30,95,168,.85)';
+      ctx.lineWidth = 1.4;
+      ctx.setLineDash([5,4]);
+      ctx.strokeRect(mx0, my0, mw, mh);
+      ctx.setLineDash([]);
+    }
   }
   function cargoInitCanvasInteraction(){
     if(cargoState.canvasInit) return;
@@ -5234,8 +5947,80 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     if(!canvas) return;
     cargoState.canvasInit = true;
     var dragging=false, lastX=0, lastY=0, pinchStartDist=null, pinchStartZoom=1;
+    function canvasPoint(e){
+      var pt = e.touches? e.touches[0] : e;
+      var r = canvas.getBoundingClientRect();
+      var sx = (pt.clientX - r.left) * (canvas.width / r.width);
+      var sy = (pt.clientY - r.top) * (canvas.height / r.height);
+      return { sx:sx, sy:sy, clientX:pt.clientX, clientY:pt.clientY };
+    }
     function pointerDown(e){
       if(e.touches && e.touches.length===2) return;
+      var cp = canvasPoint(e);
+      var isCtrl = !!(e.ctrlKey || e.metaKey);
+      if(cargoState.editMode){
+        var hit = cargoHitTestBox(cp.sx, cp.sy);
+        if(hit){
+          if(isCtrl){
+            // Ctrl+click: toggle this box into/out of the multi-selection without starting a drag.
+            var idx = cargoState.selectedBoxIds.indexOf(hit.id);
+            if(idx===-1){ cargoState.selectedBoxIds.push(hit.id); cargoState.selectedBoxId = hit.id; }
+            else { cargoState.selectedBoxIds.splice(idx,1); cargoState.selectedBoxId = cargoState.selectedBoxIds.length ? cargoState.selectedBoxIds[cargoState.selectedBoxIds.length-1] : null; }
+            cargoUpdateEditPanel();
+            cargoDrawScene();
+            if(e.preventDefault) e.preventDefault();
+            return;
+          }
+          // A plain click on a box that is already part of a multi-box selection drags the
+          // whole group together; otherwise it replaces the selection with just this one box.
+          var groupIds;
+          if(cargoState.selectedBoxIds.indexOf(hit.id)!==-1 && cargoState.selectedBoxIds.length>1){
+            groupIds = cargoState.selectedBoxIds.slice();
+          } else {
+            groupIds = [hit.id];
+            cargoState.selectedBoxIds = groupIds;
+          }
+          cargoState.selectedBoxId = hit.id;
+          var cc0 = cargoState.result.containers[cargoState.activeContainerIdx] || cargoState.result.containers[0];
+          var members = groupIds.map(function(id){
+            var b = cc0.placements.filter(function(p){ return p.id===id; })[0];
+            return b ? { id:id, startX:b.x, startY:b.y, startZ:b.z, lastValidX:b.x, lastValidY:b.y, lastValidZ:b.z } : null;
+          }).filter(Boolean);
+          // The drag is tracked on a fixed horizontal plane at the grabbed box's own height,
+          // set once here at grab time, so the screen->world mapping in pointerMove stays exact
+          // for the whole gesture regardless of camera yaw/pitch -- see cargoUnprojectPoint.
+          var dragView0 = cargoState._view;
+          var dragPlaneZ0 = hit.z;
+          cargoState.editDrag = {
+            ids: members.map(function(m){ return m.id; }),
+            members: members,
+            _downClientX: cp.clientX, _downClientY: cp.clientY,
+            dragPlaneZ: dragPlaneZ0,
+            downWorld: dragView0 ? cargoUnprojectPoint(dragView0, dragPlaneZ0, cp.sx, cp.sy) : null,
+            // Captured here, before anything moves, so a genuine drag (one that actually ends up
+            // somewhere different) can be pushed onto the undo stack at release time below.
+            _preSnapshot: cargoClonePlacements(cc0.placements),
+            _preContainerIdx: cargoState.activeContainerIdx,
+            invalid: false, outside: false
+          };
+          cargoUpdateEditPanel();
+          cargoDrawScene();
+          if(e.preventDefault) e.preventDefault();
+          return;
+        } else if(cargoState.selectMode){
+          // Select-mode + empty-space click: start a rubber-band marquee instead of rotating
+          // the camera, so a group of boxes can be lassoed at once.
+          cargoState.marquee = { sx0: cp.sx, sy0: cp.sy, sx1: cp.sx, sy1: cp.sy };
+          cargoDrawScene();
+          if(e.preventDefault) e.preventDefault();
+          return;
+        } else {
+          if(!isCtrl){ cargoState.selectedBoxIds = []; cargoState.selectedBoxId = null; }
+          cargoState.editDrag = null;
+          cargoUpdateEditPanel();
+          cargoDrawScene();
+        }
+      }
       dragging=true;
       var pt = e.touches? e.touches[0] : e;
       lastX = pt.clientX; lastY = pt.clientY;
@@ -5245,7 +6030,150 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       if(e.touches && e.touches.length===2){
         if(pinchStartDist){
           var d = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
-          cargoState.cam.zoom = Math.max(0.4, Math.min(3, pinchStartZoom*(d/pinchStartDist)));
+          cargoState.cam.zoom = Math.max(CARGO_ZOOM_MIN, Math.min(CARGO_ZOOM_MAX, pinchStartZoom*(d/pinchStartDist)));
+          cargoDrawScene();
+        }
+        if(e.preventDefault) e.preventDefault();
+        return;
+      }
+      if(cargoState.marquee){
+        var cpm = canvasPoint(e);
+        cargoState.marquee.sx1 = cpm.sx; cargoState.marquee.sy1 = cpm.sy;
+        cargoDrawScene();
+        if(e.preventDefault) e.preventDefault();
+        return;
+      }
+      if(cargoState.editDrag){
+        var drag = cargoState.editDrag;
+        var view = cargoState._view;
+        // Both screen axes now drive the floor-plane position, via a proper screen->world
+        // ray/plane intersection on the fixed grab-time plane (cargoUnprojectPoint) -- see the
+        // long comment on that function. At some camera angles (e.g. a steep, near-top-down
+        // pitch) the container's two floor axes BOTH project with a vertical screen component,
+        // so the old horizontal-only mapping left one whole axis of movement unreachable by
+        // mouse ("up/down does nothing"); this works at any yaw/pitch. Height is still never
+        // driven directly by the mouse: it's "gravity", computed below via cargoDropZFor after
+        // each move, so dragging can only ever slide cargo across the floor/stack, never leave
+        // it hanging in open space.
+        var ddx = 0, ddy = 0;
+        if(view && drag.downWorld){
+          var cpNow = canvasPoint(e);
+          var nowWorld = cargoUnprojectPoint(view, drag.dragPlaneZ, cpNow.sx, cpNow.sy);
+          if(nowWorld){ ddx = nowWorld.x - drag.downWorld.x; ddy = nowWorld.y - drag.downWorld.y; }
+        }
+        var cc = cargoState.result.containers[cargoState.activeContainerIdx] || cargoState.result.containers[0];
+        if(view && cc){
+          var isGroup = drag.members.length>1;
+          var groupIdSet = {};
+          drag.ids.forEach(function(id){ groupIdSet[id]=true; });
+          var entries = drag.members.map(function(mem){
+            var box = cc.placements.filter(function(p){ return p.id===mem.id; })[0];
+            if(!box) return null;
+            var candidate = { id: box.id, x: mem.startX+ddx, y: mem.startY+ddy, z: mem.startZ, l: box.l, w: box.w, h: box.h };
+            return { box:box, mem:mem, candidate:candidate };
+          }).filter(Boolean);
+          // When the active container is mostly empty (<=40% filled by volume), there's no
+          // sorting benefit to pulling cargo out past its walls -- so unlike the >40% case below,
+          // dragging is clamped to stay fully inside the container's footprint. Applied as one
+          // rigid x/y shift to the WHOLE dragged selection (same approach as the existing z
+          // rigid-shift clamp just below), so a group's members never move relative to each
+          // other -- only the group as a whole gets pushed back in if any member would poke
+          // outside. Done before the z/snap passes so cargoDropZFor already sees the clamped x/y.
+          if(view.container && cargoContainerFillRate(view.container, cc.placements) <= 0.40){
+            var gMinX = Infinity, gMaxX = -Infinity, gMinY = Infinity, gMaxY = -Infinity;
+            entries.forEach(function(entry){
+              if(entry.candidate.x < gMinX) gMinX = entry.candidate.x;
+              if(entry.candidate.x + entry.candidate.l > gMaxX) gMaxX = entry.candidate.x + entry.candidate.l;
+              if(entry.candidate.y < gMinY) gMinY = entry.candidate.y;
+              if(entry.candidate.y + entry.candidate.w > gMaxY) gMaxY = entry.candidate.y + entry.candidate.w;
+            });
+            var clampDX = 0, clampDY = 0;
+            if(gMinX < 0) clampDX = -gMinX;
+            else if(gMaxX > view.container.length) clampDX = view.container.length - gMaxX;
+            if(gMinY < 0) clampDY = -gMinY;
+            else if(gMaxY > view.container.width) clampDY = view.container.width - gMaxY;
+            if(clampDX !== 0 || clampDY !== 0){
+              entries.forEach(function(entry){ entry.candidate.x += clampDX; entry.candidate.y += clampDY; });
+            }
+          }
+          if(!isGroup){
+            // Single box: snap x/y FIRST (now a purely horizontal check -- see cargoSnapCandidate
+            // -- no longer gated on height), THEN drop to the real resting height at the
+            // now-aligned x/y. Snapping before dropping, rather than after, is what fixes cargo
+            // "jumping" to an odd floating position instead of cleanly joining a stack: with the
+            // old drop-then-snap order, a box that only barely grazed a stack's footprint got
+            // lifted to the stack's height before snap ever got a chance to square it up, and the
+            // real misalignment was usually too large for the (short, near-miss-only) snap range
+            // to close -- so it stayed floating, aligned to nothing. Snapping first means x/y is
+            // already close to flush (or stays wherever dragged, unsnapped, if nothing was close
+            // enough) before cargoDropZFor ever runs, so what it finds underneath is either a
+            // clean, near-complete overlap, or -- thanks to its own overlap-fraction check -- is
+            // correctly ignored as "not actually resting there". Run twice: the first snap can
+            // still only use the box's pre-drop height-independent targets, so a box landing on a
+            // genuinely new stacking tier gets one more chance to square up once it still finds
+            // itself needing a mm-scale correction on the second pass.
+            // Fresh every frame -- reusing the previous frame's object would leave the snap
+            // highlight stuck on even after the box moves away from whatever it had snapped to.
+            var snapOut = { x:false, y:false, z:false };
+            entries.forEach(function(entry){
+              var ex = {}; ex[entry.box.id] = true;
+              cargoSnapCandidate(view.container, cc.placements, entry.candidate, entry.box.id, snapOut);
+              entry.candidate.z = cargoDropZFor(cc.placements, entry.candidate, ex);
+              cargoSnapCandidate(view.container, cc.placements, entry.candidate, entry.box.id, snapOut);
+              entry.candidate.z = cargoDropZFor(cc.placements, entry.candidate, ex);
+            });
+            if(cargoState.editDrag) cargoState.editDrag.snap = snapOut;
+          } else {
+            // Group: move as a single rigid body (no per-box snapping -- see the comment this
+            // replaced) so the members' relative positions never change, but still auto-drop the
+            // whole group together, by the smallest vertical shift that clears every member's own
+            // resting height and the container floor. A group whose shape doesn't match the
+            // terrain it's dragged over can still end up with a member hovering above its own
+            // immediate support once the group settles -- unavoidable for a rigid shape, same as
+            // setting down a real stack of boxes over uneven ground.
+            var minDeltaZ = 0;
+            entries.forEach(function(entry){
+              var floorZ = cargoDropZFor(cc.placements, entry.candidate, groupIdSet);
+              var neededDelta = floorZ - entry.mem.startZ;
+              if(neededDelta > minDeltaZ) minDeltaZ = neededDelta;
+              var floorDelta = -entry.mem.startZ; // never let any member sink below z=0
+              if(floorDelta > minDeltaZ) minDeltaZ = floorDelta;
+            });
+            entries.forEach(function(entry){ entry.candidate.z = entry.mem.startZ + minDeltaZ; });
+          }
+          // Clear the floating-point tails left by the unproject/snap math (see cargoRoundCoord)
+          // before the overlap check and the live assignment below, so the committed position --
+          // and anything a neighbor snaps against next -- is a clean number, not e.g. 160.00034.
+          entries.forEach(function(entry){
+            entry.candidate.x = cargoRoundCoord(entry.candidate.x);
+            entry.candidate.y = cargoRoundCoord(entry.candidate.y);
+            entry.candidate.z = cargoRoundCoord(entry.candidate.z);
+          });
+          var anyOverlap = false, anyOutside = false;
+          entries.forEach(function(entry){
+            var overlap = false;
+            for(var i=0;i<cc.placements.length;i++){
+              var p = cc.placements[i];
+              if(groupIdSet[p.id]) continue; // never blocked by fellow members of the same group
+              if(cargoBoxesOverlap(entry.candidate, p)){ overlap = true; break; }
+            }
+            if(overlap) anyOverlap = true;
+            // Being outside the container's footprint (x/y past the walls) is still allowed --
+            // it's flagged for the amber visual cue, but doesn't block the move or force a revert
+            // the way an overlap does. Height is no longer a way to go "outside" since it's
+            // always grounded by the auto-drop above.
+            if(!cargoWithinBounds(view.container, entry.candidate)) anyOutside = true;
+          });
+          entries.forEach(function(entry){
+            entry.box.x = entry.candidate.x; entry.box.y = entry.candidate.y; entry.box.z = entry.candidate.z;
+          });
+          drag.invalid = anyOverlap;
+          drag.outside = anyOutside;
+          if(!anyOverlap){
+            entries.forEach(function(entry){
+              entry.mem.lastValidX = entry.candidate.x; entry.mem.lastValidY = entry.candidate.y; entry.mem.lastValidZ = entry.candidate.z;
+            });
+          }
           cargoDrawScene();
         }
         if(e.preventDefault) e.preventDefault();
@@ -5260,7 +6188,53 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       cargoDrawScene();
       if(e.preventDefault) e.preventDefault();
     }
-    function pointerUp(){ dragging=false; pinchStartDist=null; }
+    function pointerUp(){
+      dragging=false; pinchStartDist=null;
+      if(cargoState.marquee){
+        var m = cargoState.marquee;
+        var view0 = cargoState._view;
+        if(view0 && Math.hypot(m.sx1-m.sx0, m.sy1-m.sy0) > 4){
+          var mx0=Math.min(m.sx0,m.sx1), mx1=Math.max(m.sx0,m.sx1);
+          var my0=Math.min(m.sy0,m.sy1), my1=Math.max(m.sy0,m.sy1);
+          var cc0b = cargoState.result.containers[cargoState.activeContainerIdx] || cargoState.result.containers[0];
+          var picked = [];
+          (cc0b.placements||[]).forEach(function(pl){
+            var ctrp = cargoProject({x:pl.x+pl.l/2, y:pl.y+pl.w/2, z:pl.z+pl.h/2}, view0.cx, view0.cy, view0.center, view0.yaw, view0.pitch, view0.scale, view0.focal);
+            if(ctrp.sx>=mx0 && ctrp.sx<=mx1 && ctrp.sy>=my0 && ctrp.sy<=my1) picked.push(pl.id);
+          });
+          cargoState.selectedBoxIds = picked;
+          cargoState.selectedBoxId = picked.length ? picked[picked.length-1] : null;
+        } else {
+          cargoState.selectedBoxIds = [];
+          cargoState.selectedBoxId = null;
+        }
+        cargoState.marquee = null;
+        cargoUpdateEditPanel();
+        cargoDrawScene();
+        return;
+      }
+      if(cargoState.editDrag){
+        var drag = cargoState.editDrag;
+        var cc = cargoState.result.containers[cargoState.activeContainerIdx] || cargoState.result.containers[0];
+        if(drag.invalid){
+          drag.members.forEach(function(mem){
+            var box = cc.placements.filter(function(p){ return p.id===mem.id; })[0];
+            if(box){ box.x = mem.lastValidX; box.y = mem.lastValidY; box.z = mem.lastValidZ; }
+          });
+          cargoShowActionToast('Невозможное действие', 'Груз пересекается с другим грузом — перемещение отменено.');
+        } else if(drag._preSnapshot){
+          // Only worth an undo entry if the drag actually ended up somewhere different --
+          // a pick-up-and-put-back-down gesture shouldn't clutter the undo history.
+          var moved = drag.members.some(function(mem){
+            var box = cc.placements.filter(function(p){ return p.id===mem.id; })[0];
+            return box && (Math.abs(box.x-mem.startX)>0.01 || Math.abs(box.y-mem.startY)>0.01 || Math.abs(box.z-mem.startZ)>0.01);
+          });
+          if(moved) cargoCommitUndoSnapshot({ containerIdx: drag._preContainerIdx, placements: drag._preSnapshot });
+        }
+        cargoState.editDrag = null;
+        cargoDrawScene();
+      }
+    }
     canvas.addEventListener('mousedown', pointerDown);
     window.addEventListener('mousemove', pointerMove);
     window.addEventListener('mouseup', pointerUp);
@@ -5279,9 +6253,458 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     canvas.addEventListener('wheel', function(e){
       e.preventDefault();
       var delta = e.deltaY>0 ? 0.92 : 1.08;
-      cargoState.cam.zoom = Math.max(0.4, Math.min(3, cargoState.cam.zoom*delta));
+      cargoState.cam.zoom = Math.max(CARGO_ZOOM_MIN, Math.min(CARGO_ZOOM_MAX, cargoState.cam.zoom*delta));
       cargoDrawScene();
     }, {passive:false});
+  }
+  function cargoEditHintText(){
+    return cargoState.selectMode
+      ? 'Режим выделения: тяните по пустому месту — рамкой; Ctrl+клик — по одному'
+      : 'Нажмите на груз и тяните — переместится по полу/поверх других грузов. Кнопки рядом — высота. Ctrl+клик — выбрать несколько';
+  }
+  // The canvas's internal pixel resolution only needs to track its displayed CSS box in the
+  // fullscreen desktop edit overlay (where the box is now allowed to be a wide rectangle, not
+  // locked to a near-square aspect -- see the #cargoCanvas CSS rule under the 860px media query).
+  // Everywhere else it stays at its original fixed 1000x1025: CSS already scales that down to
+  // fit the narrow in-flow column, and keeping a higher, fixed backing resolution there gives
+  // crisper (supersampled) rendering than matching a small on-screen box 1:1 would.
+  function cargoSyncCanvasResolution(){
+    var canvas = el.cargoCanvas;
+    if(!canvas) return;
+    var isFsEdit = !!(el.cargoCanvasWrap && el.cargoCanvasWrap.classList.contains('edit-mode')
+      && typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(min-width:860px)').matches);
+    if(isFsEdit){
+      var rect = canvas.getBoundingClientRect();
+      var w = Math.max(1, Math.round(rect.width)), h = Math.max(1, Math.round(rect.height));
+      if(w>1 && h>1 && (canvas.width!==w || canvas.height!==h)){ canvas.width=w; canvas.height=h; }
+    } else if(canvas.width!==1000 || canvas.height!==1025){
+      canvas.width = 1000; canvas.height = 1025;
+    }
+  }
+  function cargoToggleEditMode(){
+    cargoState.editMode = !cargoState.editMode;
+    if(!cargoState.editMode){
+      cargoState.selectMode = false;
+      cargoState.selectedBoxId = null;
+      cargoState.selectedBoxIds = [];
+      cargoState.editDrag = null;
+      cargoState.marquee = null;
+    }
+    if(el.cargoEditBtn){
+      el.cargoEditBtn.textContent = cargoState.editMode ? 'Готово' : 'Редактировать';
+      el.cargoEditBtn.classList.toggle('active', cargoState.editMode);
+    }
+    if(el.cargoCanvasWrap) el.cargoCanvasWrap.classList.toggle('edit-mode', cargoState.editMode);
+    if(el.cargoSelectBtn) el.cargoSelectBtn.classList.toggle('active', cargoState.selectMode);
+    if(el.cargoCanvasHint) el.cargoCanvasHint.textContent = cargoState.editMode
+      ? cargoEditHintText()
+      : 'Потяните — поворот, колесо/щипок — масштаб';
+    if(typeof document !== 'undefined' && document.body){
+      document.body.classList.toggle('cargo-edit-fullscreen', cargoState.editMode);
+    }
+    cargoUpdateEditPanel();
+    cargoSyncCanvasResolution();
+    cargoDrawScene();
+  }
+  function cargoExitEditMode(){
+    if(!cargoState.editMode && !cargoState.selectedBoxIds.length) return;
+    cargoState.editMode = false;
+    cargoState.selectMode = false;
+    cargoState.selectedBoxId = null;
+    cargoState.selectedBoxIds = [];
+    cargoState.editDrag = null;
+    cargoState.marquee = null;
+    if(el.cargoEditBtn){ el.cargoEditBtn.textContent = 'Редактировать'; el.cargoEditBtn.classList.remove('active'); }
+    if(el.cargoCanvasWrap) el.cargoCanvasWrap.classList.remove('edit-mode');
+    if(el.cargoSelectBtn) el.cargoSelectBtn.classList.remove('active');
+    if(el.cargoCanvasHint) el.cargoCanvasHint.textContent = 'Потяните — поворот, колесо/щипок — масштаб';
+    if(el.cargoEditPanel) el.cargoEditPanel.hidden = true;
+    if(typeof document !== 'undefined' && document.body){
+      document.body.classList.remove('cargo-edit-fullscreen');
+    }
+    cargoSyncCanvasResolution();
+  }
+  function cargoToggleSelectMode(){
+    if(!cargoState.editMode) return;
+    cargoState.selectMode = !cargoState.selectMode;
+    cargoState.marquee = null;
+    if(el.cargoSelectBtn) el.cargoSelectBtn.classList.toggle('active', cargoState.selectMode);
+    if(el.cargoCanvasWrap) el.cargoCanvasWrap.classList.toggle('select-mode', cargoState.selectMode);
+    if(el.cargoCanvasHint) el.cargoCanvasHint.textContent = cargoEditHintText();
+    cargoDrawScene();
+  }
+  function cargoUpdateEditPanel(){
+    if(!el.cargoEditPanel) return;
+    if(!cargoState.editMode || !cargoState.selectedBoxIds.length){
+      el.cargoEditPanel.hidden = true;
+      return;
+    }
+    var res = cargoState.result;
+    if(!res){ el.cargoEditPanel.hidden = true; return; }
+    var c = res.containers[cargoState.activeContainerIdx] || res.containers[0];
+    var boxes = cargoState.selectedBoxIds.map(function(id){ return c.placements.filter(function(p){ return p.id===id; })[0]; }).filter(Boolean);
+    if(!boxes.length){ el.cargoEditPanel.hidden = true; return; }
+    el.cargoEditPanel.hidden = false;
+    if(el.cargoEditPanelName){
+      var totalWeight = 0;
+      boxes.forEach(function(b){ totalWeight += (+b.weight || 0); });
+      var weightTxt = totalWeight.toLocaleString('ru-RU', {maximumFractionDigits:1}) + ' кг';
+      el.cargoEditPanelName.innerHTML = '';
+      var l1 = document.createElement('span');
+      l1.className = 'cep-line1';
+      if(boxes.length === 1){
+        l1.textContent = boxes[0].name + ' · ' + weightTxt;
+        el.cargoEditPanelName.appendChild(l1);
+      } else {
+        // Breakdown by name/type among the current selection, e.g. "Рычаг: 4, Стабилизатор: 7",
+        // so a mixed multi-select shows at a glance what's selected, not just a bare count.
+        var byName = {}, order = [];
+        boxes.forEach(function(b){
+          var key = b.name == null ? '—' : String(b.name);
+          if(!byName[key]){ byName[key] = 0; order.push(key); }
+          byName[key]++;
+        });
+        var breakdown = order.map(function(k){ return k + ': ' + byName[k]; }).join(', ');
+        l1.textContent = 'Выбрано грузов: ' + boxes.length + ' · ' + weightTxt;
+        var l2 = document.createElement('span');
+        l2.className = 'cep-line2';
+        l2.textContent = breakdown;
+        el.cargoEditPanelName.appendChild(l1);
+        el.cargoEditPanelName.appendChild(l2);
+      }
+    }
+  }
+  function cargoHitTestBox(sx, sy){
+    var view = cargoState._view;
+    if(!view) return null;
+    function proj(p){ return cargoProject(p, view.cx, view.cy, view.center, view.yaw, view.pitch, view.scale, view.focal); }
+    var best = null, bestDepth = Infinity;
+    (view.placements||[]).forEach(function(pl){
+      var x=pl.x,y=pl.y,z=pl.z,l=pl.l,w=pl.w,h=pl.h;
+      var corners = [
+        {x:x,y:y,z:z},{x:x+l,y:y,z:z},{x:x,y:y+w,z:z},{x:x+l,y:y+w,z:z},
+        {x:x,y:y,z:z+h},{x:x+l,y:y,z:z+h},{x:x,y:y+w,z:z+h},{x:x+l,y:y+w,z:z+h}
+      ];
+      var pts = corners.map(proj);
+      var minSx=Infinity,maxSx=-Infinity,minSy=Infinity,maxSy=-Infinity,avgDepth=0;
+      pts.forEach(function(p){
+        if(p.sx<minSx) minSx=p.sx; if(p.sx>maxSx) maxSx=p.sx;
+        if(p.sy<minSy) minSy=p.sy; if(p.sy>maxSy) maxSy=p.sy;
+        avgDepth += p.depth;
+      });
+      avgDepth /= pts.length;
+      if(sx>=minSx && sx<=maxSx && sy>=minSy && sy<=maxSy){
+        if(avgDepth < bestDepth){ bestDepth = avgDepth; best = pl; }
+      }
+    });
+    return best;
+  }
+  function cargoBoxesOverlap(a, b){
+    var EPS = 0.01;
+    return (a.x < b.x+b.l-EPS) && (a.x+a.l > b.x+EPS) &&
+           (a.y < b.y+b.w-EPS) && (a.y+a.w > b.y+EPS) &&
+           (a.z < b.z+b.h-EPS) && (a.z+a.h > b.z+EPS);
+  }
+  // "Gravity" resting height for a candidate's (x,y) footprint: the top of the tallest OTHER
+  // placement whose footprint genuinely overlaps it, or 0 (the container floor) if nothing is
+  // underneath. Used to auto-drop dragged cargo onto whatever is directly beneath it instead of
+  // letting the user set height by dragging up/down -- see the long comment in pointerMove's
+  // editDrag branch for why (user feedback: boxes must never be left floating mid-air, or
+  // visually poking through another box, while being rearranged).
+  function cargoDropZFor(placements, candidate, excludeIdSet){
+    var OV = 0.01;
+    var maxTop = 0;
+    for(var i=0;i<placements.length;i++){
+      var p = placements[i];
+      if(excludeIdSet[p.id]) continue;
+      var xOv = candidate.x < p.x+p.l-OV && candidate.x+candidate.l > p.x+OV;
+      var yOv = candidate.y < p.y+p.w-OV && candidate.y+candidate.w > p.y+OV;
+      if(xOv && yOv){
+        // Require a genuine, substantial footprint overlap (at least 60% of the smaller of the
+        // two footprints) before treating `p` as something the candidate actually rests on. A
+        // mere sliver of overlap (a corner or edge barely touching, a few cm of an 80cm box) used
+        // to be enough to lift the WHOLE candidate up to p's height -- reported as cargo "jumping"
+        // to an odd floating position next to a stack instead of either joining it properly or
+        // staying on the floor, because the snap pass's own (short, near-miss-only) range often
+        // couldn't close a gap that large. See the "snap before drop" reordering in pointerMove,
+        // which handles the genuine near-miss case by aligning x/y FIRST so this check then sees
+        // a near-complete overlap, as it should.
+        var overlapX = Math.min(candidate.x+candidate.l, p.x+p.l) - Math.max(candidate.x, p.x);
+        var overlapY = Math.min(candidate.y+candidate.w, p.y+p.w) - Math.max(candidate.y, p.y);
+        var minArea = Math.min(candidate.l*candidate.w, p.l*p.w);
+        if(minArea > 0 && (overlapX*overlapY) / minArea < 0.6) continue;
+        var top = p.z + p.h;
+        if(top > maxTop) maxTop = top;
+      }
+    }
+    return maxTop;
+  }
+  // Rounds a coordinate to the nearest 0.01 (sub-millimeter at this app's cm scale), clearing the
+  // long floating-point tails that unprojecting a mouse position accumulates (e.g. 160.00034... for
+  // what should be a clean 160) -- left alone those tails made otherwise-flush stacks of cargo read
+  // as a jagged "staircase" on screen and reappeared in the exported numbers.
+  function cargoRoundCoord(v){ return Math.round(v*100)/100; }
+  var CARGO_SNAP = 10;
+  function cargoSnapCandidate(container, placements, candidate, excludeId, snapOut){
+    if(!container) return candidate;
+    var OV = 0.01;
+    // One shared "near-miss" tolerance for every X/Y snap target -- container walls, a neighbor
+    // at the SAME level, and a neighbor one stacking tier up/down alike. Earlier this round, same
+    // -tier neighbor snapping was removed outright and this tolerance was tightened to ~1.5%; in
+    // practice that also stopped correcting small, clearly-accidental gaps and slightly crooked
+    // placement (visible as thin seams/steps once several pieces sit next to or on top of each
+    // other) -- not what was wanted. Restored, but still NOT the old long-range (10cm) magnet:
+    // ~2% of the box's own footprint (top of the requested 1-2% range, since 1.5% still missed
+    // some near-misses) is enough to close a genuine near-miss or square up crooked placement,
+    // while a deliberate, visible gap still stays exactly where it was left.
+    var nearMissRadius = Math.max(0.5, Math.min(candidate.l, candidate.w) * 0.02);
+    // X axis: snap candidate's left/right faces to the container walls, or to any box beside it
+    // (sharing Y range) regardless of height. Height used to gate which neighbors even counted
+    // as X/Y snap targets (same level, or "touching" one tier up/down) -- but that made the snap
+    // depend on the CURRENT, not-yet-aligned z, which itself depends on x/y through
+    // cargoDropZFor: a box dragged near a stack, but not yet near enough on x/y to be snapped,
+    // could still pick up a sliver of footprint overlap and get lifted to the stack's height by
+    // cargoDropZFor BEFORE this got a chance to square it up -- the box then stayed floating at
+    // that height, offset to the side, because the real misalignment was too large for this
+    // near-miss tolerance to close ("jumping" to an odd position instead of cleanly joining the
+    // stack or staying on the floor). Snapping x/y purely on horizontal near-miss distance FIRST,
+    // with no height gate, then letting cargoDropZFor settle z from the now-aligned footprint,
+    // avoids that: either the box is close enough to align and then genuinely rests flush on
+    // whatever it's now aligned with, or it isn't close enough, stays where dragged, and
+    // cargoDropZFor's own overlap-fraction check (see its comment) keeps it off any neighbor it
+    // only barely grazes.
+    var xTargets = [{t:0, r:nearMissRadius}, {t:container.length, r:nearMissRadius}];
+    placements.forEach(function(p){
+      if(p.id === excludeId) return;
+      var yOv = candidate.y < p.y+p.w-OV && candidate.y+candidate.w > p.y+OV;
+      if(yOv){ xTargets.push({t:p.x, r:nearMissRadius}, {t:p.x+p.l, r:nearMissRadius}); }
+    });
+    var bestX = null;
+    xTargets.forEach(function(tg){
+      [tg.t-candidate.x, tg.t-(candidate.x+candidate.l)].forEach(function(d){
+        if(Math.abs(d) <= tg.r && (bestX===null || Math.abs(d)<Math.abs(bestX))) bestX = d;
+      });
+    });
+    if(bestX!==null){ candidate.x += bestX; if(snapOut) snapOut.x = true; }
+    // Y axis -- same split as X above.
+    var yTargets = [{t:0, r:nearMissRadius}, {t:container.width, r:nearMissRadius}];
+    placements.forEach(function(p){
+      if(p.id === excludeId) return;
+      var xOv = candidate.x < p.x+p.l-OV && candidate.x+candidate.l > p.x+OV;
+      if(xOv){ yTargets.push({t:p.y, r:nearMissRadius}, {t:p.y+p.w, r:nearMissRadius}); }
+    });
+    var bestY = null;
+    yTargets.forEach(function(tg){
+      [tg.t-candidate.y, tg.t-(candidate.y+candidate.w)].forEach(function(d){
+        if(Math.abs(d) <= tg.r && (bestY===null || Math.abs(d)<Math.abs(bestY))) bestY = d;
+      });
+    });
+    if(bestY!==null){ candidate.y += bestY; if(snapOut) snapOut.y = true; }
+    // Z axis (floor, container ceiling, or a box directly below/above)
+    var zTargets = [0, container.height];
+    placements.forEach(function(p){
+      if(p.id === excludeId) return;
+      var xOv = candidate.x < p.x+p.l-OV && candidate.x+candidate.l > p.x+OV;
+      var yOv = candidate.y < p.y+p.w-OV && candidate.y+candidate.w > p.y+OV;
+      if(xOv && yOv){ zTargets.push(p.z); zTargets.push(p.z+p.h); }
+    });
+    var bestZ = null;
+    zTargets.forEach(function(t){
+      [t-candidate.z, t-(candidate.z+candidate.h)].forEach(function(d){
+        if(Math.abs(d) <= CARGO_SNAP && (bestZ===null || Math.abs(d)<Math.abs(bestZ))) bestZ = d;
+      });
+    });
+    if(bestZ!==null){ candidate.z += bestZ; if(snapOut) snapOut.z = true; }
+    return candidate;
+  }
+  function cargoValidatePlacement(container, placements, candidate, excludeId){
+    if(!container) return false;
+    if(candidate.x < -0.001 || candidate.y < -0.001 || candidate.z < -0.001) return false;
+    if(candidate.x + candidate.l > container.length + 0.01) return false;
+    if(candidate.y + candidate.w > container.width + 0.01) return false;
+    if(candidate.z + candidate.h > container.height + 0.01) return false;
+    for(var i=0;i<placements.length;i++){
+      var p = placements[i];
+      if(p.id === excludeId) continue;
+      if(cargoBoxesOverlap(candidate, p)) return false;
+    }
+    return true;
+  }
+  // Bounds-only check (no overlap test) -- used to flag a box as "outside the container"
+  // (amber, allowed, cargo left floating in the air temporarily) as distinct from actually
+  // overlapping another box (red, blocked, reverts on release).
+  function cargoWithinBounds(container, candidate){
+    if(!container) return false;
+    return candidate.x >= -0.001 && candidate.y >= -0.001 && candidate.z >= -0.001 &&
+      candidate.x + candidate.l <= container.length + 0.01 &&
+      candidate.y + candidate.w <= container.width + 0.01 &&
+      candidate.z + candidate.h <= container.height + 0.01;
+  }
+  // How full THIS ACTIVE container is right now, by volume -- distinct from
+  // result.totals.fillRate, which averages across every used container. Drives the >40%/<=40%
+  // drag-outside-bounds rule in pointerMove's editDrag branch.
+  function cargoContainerFillRate(container, placements){
+    if(!container || !placements || !placements.length) return 0;
+    var used = 0;
+    placements.forEach(function(p){ used += p.l*p.w*p.h; });
+    var total = container.length*container.width*container.height;
+    return total>0 ? used/total : 0;
+  }
+  // ---- Undo/redo for cargo repositioning (drag, and the edit-panel step/reset buttons) ----
+  // Snapshot-based: each undo entry is a full clone of one container's placements array as it
+  // was right before the action that's being made undoable. Simple and robust for the box counts
+  // this app deals with (no need to model deltas), at the cost of a shallow-cloned array per
+  // action -- capped at 50 entries so it can't grow unbounded over a long editing session.
+  function cargoClonePlacements(placements){
+    return (placements||[]).map(function(p){ return Object.assign({}, p); });
+  }
+  function cargoActiveContainer(){
+    if(!cargoState.result) return null;
+    return cargoState.result.containers[cargoState.activeContainerIdx] || cargoState.result.containers[0];
+  }
+  // Call once, right before a position-changing action commits, to capture what "undo" should
+  // restore. Making any fresh change invalidates whatever had been undone, so this also clears
+  // the redo stack -- standard undo/redo semantics.
+  function cargoPushUndoSnapshot(){
+    var c = cargoActiveContainer();
+    if(!c) return;
+    cargoCommitUndoSnapshot({ containerIdx: cargoState.activeContainerIdx, placements: cargoClonePlacements(c.placements) });
+  }
+  function cargoCommitUndoSnapshot(snap){
+    cargoState.undoStack.push(snap);
+    if(cargoState.undoStack.length > 50) cargoState.undoStack.shift();
+    cargoState.redoStack = [];
+    cargoUpdateUndoRedoButtons();
+  }
+  function cargoRestoreSnapshot(snap){
+    var res = cargoState.result;
+    if(!res || !snap) return;
+    var c = res.containers[snap.containerIdx] || res.containers[0];
+    if(!c) return;
+    c.placements = cargoClonePlacements(snap.placements);
+  }
+  function cargoUndo(){
+    if(!cargoState.undoStack.length) return;
+    var c = cargoActiveContainer();
+    var current = c ? { containerIdx: cargoState.activeContainerIdx, placements: cargoClonePlacements(c.placements) } : null;
+    var snap = cargoState.undoStack.pop();
+    if(current) cargoState.redoStack.push(current);
+    cargoRestoreSnapshot(snap);
+    cargoState.editDrag = null;
+    cargoUpdateEditPanel();
+    cargoDrawScene();
+    cargoUpdateUndoRedoButtons();
+  }
+  function cargoRedo(){
+    if(!cargoState.redoStack.length) return;
+    var c = cargoActiveContainer();
+    var current = c ? { containerIdx: cargoState.activeContainerIdx, placements: cargoClonePlacements(c.placements) } : null;
+    var snap = cargoState.redoStack.pop();
+    if(current) cargoState.undoStack.push(current);
+    cargoRestoreSnapshot(snap);
+    cargoState.editDrag = null;
+    cargoUpdateEditPanel();
+    cargoDrawScene();
+    cargoUpdateUndoRedoButtons();
+  }
+  function cargoUpdateUndoRedoButtons(){
+    if(el.cargoUndoBtn) el.cargoUndoBtn.disabled = cargoState.undoStack.length === 0;
+    if(el.cargoRedoBtn) el.cargoRedoBtn.disabled = cargoState.redoStack.length === 0;
+  }
+  var cargoActionToastTimer = null, cargoActionToastHideTimer = null;
+  // Brief on-screen message for a move that couldn't be completed (overlap, or floor/ceiling
+  // already reached) -- fades in, holds a couple seconds, fades out and clears itself so it can
+  // fire again right away for the next blocked attempt.
+  function cargoShowActionToast(title, desc){
+    if(!el.cargoActionToast) return;
+    el.cargoActionToast.innerHTML = '<div class="cat-title">'+esc(title)+'</div>'+(desc ? ('<div class="cat-desc">'+esc(desc)+'</div>') : '');
+    el.cargoActionToast.hidden = false;
+    el.cargoActionToast.classList.remove('show');
+    void el.cargoActionToast.offsetWidth; // restart the fade-in even if a toast is already showing
+    el.cargoActionToast.classList.add('show');
+    if(cargoActionToastTimer) clearTimeout(cargoActionToastTimer);
+    if(cargoActionToastHideTimer) clearTimeout(cargoActionToastHideTimer);
+    cargoActionToastTimer = setTimeout(function(){
+      el.cargoActionToast.classList.remove('show');
+      cargoActionToastHideTimer = setTimeout(function(){ if(el.cargoActionToast) el.cargoActionToast.hidden = true; }, 300);
+    }, 2600);
+  }
+  var CARGO_HEIGHT_STEP = 5;
+  var CARGO_HORIZ_STEP = 5;
+  // Shared by the edit-panel's Выше/Ниже (z), Влево/Вправо (x) and Вперёд/Назад (y) step buttons. Applies the same
+  // delta, on the given axis, to every selected box at once. Going above/below or past the ends of
+  // the container is allowed (cargo can be left "in the air" or overhanging temporarily while
+  // rearranging) -- only a genuine overlap with a box OUTSIDE the selected group blocks the move --
+  // except on z, where a floor clamp (z>=0) mirrors the same protection already applied to drag
+  // moves, so these buttons can't push a box below the container floor either.
+  function cargoAdjustSelectedPos(axis, deltaCm){
+    if(!cargoState.editMode || !cargoState.selectedBoxIds.length) return;
+    var res = cargoState.result;
+    if(!res) return;
+    var c = res.containers[cargoState.activeContainerIdx] || res.containers[0];
+    // Needed for the ceiling clamp below -- cargoGetContainer() gives the container's own
+    // length/width/height, which the "used" container entry (c, above) doesn't carry itself.
+    var containerDims = cargoGetContainer(cargoState.containerId);
+    var ids = cargoState.selectedBoxIds;
+    var idSet = {}; ids.forEach(function(id){ idSet[id]=true; });
+    var boxes = ids.map(function(id){ return c.placements.filter(function(p){ return p.id===id; })[0]; }).filter(Boolean);
+    if(!boxes.length) return;
+    var candidates = boxes.map(function(box){
+      var cand = { id:box.id, x:box.x, y:box.y, z:box.z, l:box.l, w:box.w, h:box.h };
+      cand[axis] = cargoRoundCoord(cand[axis] + deltaCm);
+      if(axis==='z'){
+        cand.z = Math.max(0, cand.z);
+        // Ceiling clamp: the floor clamp just above has always stopped cargo sinking below
+        // z=0, but nothing stopped "Выше" from pushing it up past the container's own roof --
+        // reported as boxes sometimes poking out above the container. Mirror the floor clamp on
+        // the top side too.
+        if(containerDims) cand.z = Math.min(cand.z, Math.max(0, containerDims.height - cand.h));
+      }
+      return cand;
+    });
+    var blocked = false;
+    candidates.forEach(function(cand){
+      for(var i=0;i<c.placements.length;i++){
+        var p = c.placements[i];
+        if(idSet[p.id]) continue;
+        if(cargoBoxesOverlap(cand, p)){ blocked = true; break; }
+      }
+    });
+    if(blocked){
+      cargoShowActionToast('Невозможное действие', 'Груз пересекается с другим грузом — перемещение отменено.');
+      return;
+    }
+    // The ceiling/floor clamp above can silently absorb the whole requested delta (every
+    // candidate ends up exactly where it already was) when cargo is already flush against the
+    // container's floor or roof -- let the user know why nothing happened instead of staying
+    // silent, same as the overlap case above.
+    if(axis==='z'){
+      var clampedToNothing = candidates.every(function(cand, i){ return Math.abs(cand.z - boxes[i].z) < 0.001; });
+      if(clampedToNothing && deltaCm !== 0){
+        cargoShowActionToast('Невозможное действие', deltaCm > 0 ? 'Груз уже упирается в потолок контейнера.' : 'Груз уже стоит на полу контейнера.');
+        return;
+      }
+    }
+    cargoPushUndoSnapshot();
+    candidates.forEach(function(cand, i){ boxes[i].x = cand.x; boxes[i].y = cand.y; boxes[i].z = cand.z; });
+    cargoDrawScene();
+  }
+  function cargoAdjustSelectedHeight(deltaCm){ cargoAdjustSelectedPos('z', deltaCm); }
+  function cargoAdjustSelectedHoriz(deltaCm){ cargoAdjustSelectedPos('x', deltaCm); }
+  function cargoAdjustSelectedDepth(deltaCm){ cargoAdjustSelectedPos('y', deltaCm); }
+  function cargoResetSelectedPosition(){
+    if(!cargoState.editMode || !cargoState.selectedBoxIds.length) return;
+    var res = cargoState.result;
+    if(!res) return;
+    var c = res.containers[cargoState.activeContainerIdx] || res.containers[0];
+    cargoPushUndoSnapshot();
+    cargoState.selectedBoxIds.forEach(function(id){
+      var box = c.placements.filter(function(p){ return p.id===id; })[0];
+      if(!box) return;
+      var orig = box._orig || { x: box.x, y: box.y, z: box.z };
+      box.x = orig.x; box.y = orig.y; box.z = orig.z;
+    });
+    cargoDrawScene();
   }
   var CARGO_PLANS_KEY = 'trt_cargo_plans_v1';
   function cargoLoadPlansFromStorage(){
@@ -5337,7 +6760,37 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     cargoState.containerId = p.containerId;
     cargoState.items = p.items || [];
     cargoState.result = p.result || null;
+    if(cargoState.result){
+      cargoState.result.containers.forEach(function(ctr){
+        ctr.placements.forEach(function(pl){
+          // Defensive floor clamp: a plan saved before the drag-floor fix could have a box
+          // stored with z<0 (sunk below the container). Pull it back up to the floor on load
+          // so an old save doesn't keep reopening with cargo stuck underground.
+          if(pl.z < 0) pl.z = 0;
+          if(!pl._orig) pl._orig = {x:pl.x, y:pl.y, z:pl.z};
+        });
+      });
+      if(!cargoState.result.colorByCargoId){
+        cargoState.result.colorByCargoId = {};
+        cargoState.result.containers.forEach(function(ctr){
+          ctr.placements.forEach(function(pl){
+            if(!cargoState.result.colorByCargoId[pl.cargoId]) cargoState.result.colorByCargoId[pl.cargoId] = pl.color;
+          });
+        });
+      }
+    }
     cargoState.activeContainerIdx = 0;
+    cargoState.editMode = false;
+    cargoState.selectMode = false;
+    cargoState.selectedBoxId = null;
+    cargoState.selectedBoxIds = [];
+    cargoState.editDrag = null;
+    cargoState.marquee = null;
+    cargoState.variants = [];
+    cargoState.autoSortIdx = 0;
+    cargoState.variantSeq = 0;
+    cargoState.undoStack = [];
+    cargoState.redoStack = [];
     if(cargoState.result) cargoGoToStep(3); else cargoGoToStep(2);
   }
   function cargoDeletePlan(id){
@@ -6384,6 +7837,346 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   (function initProcBoxCycle(){
     setInterval(swapProcBoxVariant, 180000); // 3 minutes
   })();
+  // "Отдел Продажи" tile icon: animated 3D bar chart + self-drawing trend
+  // arrow. Unlike the icons above (pure CSS keyframes, or a single class
+  // toggled on a timer), this one needs real per-frame geometry: the
+  // arrow's path is different for each of 5 bar-height datasets and has
+  // to be rebuilt every loop, so it's driven from JS rather than CSS
+  // alone (the CSS above only supplies the transitions/keyframes that JS
+  // triggers by changing styles/classes -- see the long comment on
+  // .menu-tile-icon--sales-anim for the full design rationale).
+  var SALES_DATASETS = [
+    [0.42, 0.68, 0.55, 0.88],
+    [0.50, 0.33, 0.72, 0.92],
+    [0.30, 0.58, 0.46, 0.97],
+    [0.58, 0.40, 0.75, 0.85],
+    [0.38, 0.80, 0.50, 1.00]
+  ];
+  var SALES_BAR_X = [13, 33, 53, 73];
+  var SALES_BAR_W = 15;
+  var SALES_BASELINE = 86;
+  var SALES_MAX_H = 54;
+  var SALES_DEPTH_DX = 5, SALES_DEPTH_DY = -4.2;
+  var SALES_FRONT = ['url(#salesGradBlue)','url(#salesGradGreen)','url(#salesGradRed)','url(#salesGradYellow)'];
+  var SALES_TOP = ['#8CC6F7','#7FE4B3','#F6968B','#FFD98C'];
+  var SALES_SIDE = ['#164E86','#0F733F','#A3261D','#B06C09'];
+  var SALES_HEAD_LEN = 11, SALES_HEAD_HALF_W = 5.2;
+
+  function salesIconInit(){
+    if(!el.salesIconWrap) return;
+    var svg = el.salesIconWrap.querySelector('.sales-icon-svg');
+    var barsG = el.salesIconWrap.querySelector('.sales-bars');
+    var pathEl = el.salesIconWrap.querySelector('.sales-arrow-path');
+    var headEl = el.salesIconWrap.querySelector('.sales-arrowhead');
+    if(!svg || !barsG || !pathEl || !headEl) return;
+    var ns = 'http://www.w3.org/2000/svg';
+    var barScaleEls = [];
+
+    function buildBars(){
+      barsG.innerHTML = '';
+      barScaleEls = [];
+      for(var i=0;i<4;i++){
+        var x = SALES_BAR_X[i];
+        var topY = SALES_BASELINE - SALES_MAX_H; // full design height; wrapper groups scale it down
+
+        var gScale = document.createElementNS(ns,'g');
+        gScale.setAttribute('class','sb-scale');
+        var gBreathe = document.createElementNS(ns,'g');
+        gBreathe.setAttribute('class','sb-breathe sb-b'+(i+1));
+
+        var top = document.createElementNS(ns,'polygon');
+        top.setAttribute('points', [
+          [x,topY],[x+SALES_BAR_W,topY],[x+SALES_BAR_W+SALES_DEPTH_DX,topY+SALES_DEPTH_DY],[x+SALES_DEPTH_DX,topY+SALES_DEPTH_DY]
+        ].map(function(p){return p[0]+','+p[1];}).join(' '));
+        top.setAttribute('fill', SALES_TOP[i]);
+
+        var side = document.createElementNS(ns,'polygon');
+        side.setAttribute('points', [
+          [x+SALES_BAR_W,topY],[x+SALES_BAR_W+SALES_DEPTH_DX,topY+SALES_DEPTH_DY],
+          [x+SALES_BAR_W+SALES_DEPTH_DX,SALES_BASELINE+SALES_DEPTH_DY],[x+SALES_BAR_W,SALES_BASELINE]
+        ].map(function(p){return p[0]+','+p[1];}).join(' '));
+        side.setAttribute('fill', SALES_SIDE[i]);
+
+        var front = document.createElementNS(ns,'rect');
+        front.setAttribute('x', x); front.setAttribute('y', topY);
+        front.setAttribute('width', SALES_BAR_W); front.setAttribute('height', SALES_MAX_H);
+        front.setAttribute('rx', 1.4);
+        front.setAttribute('fill', SALES_FRONT[i]);
+
+        gBreathe.appendChild(side);
+        gBreathe.appendChild(top);
+        gBreathe.appendChild(front);
+        gScale.appendChild(gBreathe);
+        barsG.appendChild(gScale);
+        barScaleEls.push(gScale);
+      }
+    }
+
+    function setBarFractions(fracs, animate){
+      for(var i=0;i<4;i++){
+        barScaleEls[i].style.transition = animate ? '' : 'none';
+        barScaleEls[i].style.transform = 'scaleY('+fracs[i]+')';
+        if(!animate){
+          barScaleEls[i].getBoundingClientRect(); // force reflow before re-enabling the transition
+          barScaleEls[i].style.transition = '';
+        }
+      }
+    }
+
+    function barTopPoint(i, frac){
+      return [SALES_BAR_X[i] + SALES_BAR_W/2, SALES_BASELINE - SALES_MAX_H*frac - 3];
+    }
+
+    function buildPathD(fracs){
+      var pts = [[4, SALES_BASELINE-6]];
+      for(var i=0;i<4;i++) pts.push(barTopPoint(i, fracs[i]));
+      var p3 = pts[pts.length-2], p4 = pts[pts.length-1];
+      var dx = p4[0]-p3[0], dy = p4[1]-p3[1];
+      var len = Math.hypot(dx,dy) || 1;
+      var dir = [dx/len, dy/len];
+      var ext = 10;
+      var tip = [p4[0] + dir[0]*ext, p4[1] + dir[1]*ext];
+      // the drawn line stops at the arrowhead wedge's back edge, not the tip itself -- the
+      // solid triangle (positioned separately below) then covers the line's round end-cap,
+      // so the head reads as a crisp wedge instead of blending into a thick round dot.
+      var headBase = [tip[0] - dir[0]*SALES_HEAD_LEN, tip[1] - dir[1]*SALES_HEAD_LEN];
+      pts.push(headBase);
+      var d = 'M '+pts[0][0]+' '+pts[0][1];
+      for(var j=1;j<pts.length;j++) d += ' L '+pts[j][0]+' '+pts[j][1];
+      return { d: d, tip: tip, dir: dir };
+    }
+
+    function positionArrowhead(tip, dir){
+      var nx = -dir[1], ny = dir[0];
+      var base = [tip[0] - dir[0]*SALES_HEAD_LEN, tip[1] - dir[1]*SALES_HEAD_LEN];
+      var p1 = tip;
+      var p2 = [base[0] + nx*SALES_HEAD_HALF_W, base[1] + ny*SALES_HEAD_HALF_W];
+      var p3 = [base[0] - nx*SALES_HEAD_HALF_W, base[1] - ny*SALES_HEAD_HALF_W];
+      headEl.setAttribute('points', p1.join(',')+' '+p2.join(',')+' '+p3.join(','));
+    }
+
+    var timers = [];
+    function clearSalesTimers(){ timers.forEach(clearTimeout); timers = []; }
+
+    // Phase timing, per dataset: draw (3000ms, path 0->fully drawn) -> hold (3000ms, arrowhead
+    // shown, fully static) -> erase (900ms, path retracts back to hidden; the NEXT dataset's
+    // bar heights morph in over this same 900ms so they're already in place when the next
+    // draw phase begins) -> repeat with the next dataset, cycling through all 5 before any
+    // one repeats.
+    function runPhase(idx, isFirst){
+      var fracs = SALES_DATASETS[idx];
+      if(isFirst) setBarFractions(fracs, false);
+      var info = buildPathD(fracs);
+      pathEl.setAttribute('d', info.d);
+      headEl.classList.remove('show');
+      positionArrowhead(info.tip, info.dir);
+      var L = pathEl.getTotalLength();
+      pathEl.style.transition = 'none';
+      pathEl.style.strokeDasharray = L;
+      pathEl.style.strokeDashoffset = L;
+      pathEl.getBoundingClientRect(); // offsetWidth doesn't reliably reflow SVG geometry -- this does
+      pathEl.style.transition = 'stroke-dashoffset 3000ms cubic-bezier(.3,0,.2,1)';
+      requestAnimationFrame(function(){
+        requestAnimationFrame(function(){ pathEl.style.strokeDashoffset = '0'; });
+      });
+      timers.push(setTimeout(function(){ headEl.classList.add('show'); }, 2850));
+      timers.push(setTimeout(function(){
+        headEl.classList.remove('show');
+        pathEl.style.transition = 'stroke-dashoffset 900ms ease-in';
+        pathEl.style.strokeDashoffset = L;
+        setBarFractions(SALES_DATASETS[(idx+1) % SALES_DATASETS.length], true);
+      }, 3000 + 3000));
+      timers.push(setTimeout(function(){
+        runPhase((idx+1) % SALES_DATASETS.length, false);
+      }, 3000 + 3000 + 900));
+    }
+
+    buildBars();
+    setBarFractions(SALES_DATASETS[0], false);
+    runPhase(0, true);
+  }
+  salesIconInit();
+
+  // "Отдел Снабжения" tile icon -- two-act loop (see the long comment on
+  // .menu-tile-icon--supply-anim above for the full design rationale).
+  // Built and visually iterated as a standalone prototype first (screenshot
+  // review across both acts), then ported here following the sales icon's
+  // id/class naming convention. Uses the same transition-based tween
+  // pattern as salesIconInit, just driven by an async/await phase sequence
+  // (already used elsewhere in this file, e.g. decodeImage/copy) instead of
+  // a setTimeout chain, since each act is a long linear sequence rather
+  // than a single repeating phase.
+  function supplyIconInit(){
+    if(!el.supplyIconWrap) return;
+    var wrap = el.supplyIconWrap;
+    var act1 = wrap.querySelector('.supply-act1');
+    var act2 = wrap.querySelector('.supply-act2');
+    var trolley = wrap.querySelector('.supply-trolley');
+    var cable = wrap.querySelector('.supply-cable');
+    var hook = wrap.querySelector('.supply-hook');
+    var boxEls = {
+      red: wrap.querySelector('.supply-box-red'),
+      green: wrap.querySelector('.supply-box-green'),
+      blue: wrap.querySelector('.supply-box-blue')
+    };
+    var clipRows = Array.prototype.slice.call(wrap.querySelectorAll('.supply-cl-row'));
+    var orderSheet = wrap.querySelector('.supply-order-sheet');
+    if(!act1 || !act2 || !trolley || !cable || !hook || !boxEls.red || !boxEls.green || !boxEls.blue || !clipRows.length || !orderSheet) return;
+
+    function setT(elm, ms){ elm.style.transition = ms ? ('all '+ms+'ms cubic-bezier(.4,0,.2,1)') : 'none'; }
+    function wait(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+
+    function buildRow(g){
+      g.innerHTML =
+        '<rect x="-15" y="-3.2" width="22" height="3.6" rx="1.4" fill="#cdd3dc"></rect>' +
+        '<g class="cl-mark" opacity="0" transform="translate(13,0) scale(0.4)">' +
+          '<circle r="7" fill="#fff"></circle>' +
+          '<path class="cl-check" d="M -3.4 0.3 L -0.8 3 L 3.6 -3.2" fill="none" stroke="#2fae52" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="display:none;"></path>' +
+          '<g class="cl-x" style="display:none;">' +
+            '<line x1="-3" y1="-3" x2="3" y2="3" stroke="#e8402e" stroke-width="2.3" stroke-linecap="round"></line>' +
+            '<line x1="3" y1="-3" x2="-3" y2="3" stroke="#e8402e" stroke-width="2.3" stroke-linecap="round"></line>' +
+          '</g>' +
+        '</g>';
+    }
+    clipRows.forEach(buildRow);
+
+    function resetRow(g){
+      var mark = g.querySelector('.cl-mark');
+      setT(mark, 0);
+      mark.setAttribute('opacity','0');
+      mark.setAttribute('transform','translate(13,0) scale(0.4)');
+      mark.querySelector('.cl-check').style.display = 'none';
+      mark.querySelector('.cl-x').style.display = 'none';
+    }
+
+    function markRow(g, isCheck){
+      var mark = g.querySelector('.cl-mark');
+      mark.querySelector('.cl-check').style.display = isCheck ? '' : 'none';
+      mark.querySelector('.cl-x').style.display = isCheck ? 'none' : '';
+      setT(mark, 260);
+      return wait(10).then(function(){
+        mark.setAttribute('opacity','1');
+        mark.setAttribute('transform','translate(13,0) scale(1)');
+        return wait(280);
+      });
+    }
+
+    function liftBox(key){
+      var box = boxEls[key];
+      setT(trolley, 420);
+      trolley.setAttribute('transform','translate(50,20)');
+      return wait(440).then(function(){
+        setT(cable, 160); setT(hook, 160);
+        cable.setAttribute('y2','20');
+        hook.setAttribute('d','M -3 20 q 0 6 3 6 q 3 0 3 -6');
+        return wait(180);
+      }).then(function(){
+        var cur = box.getAttribute('transform');
+        var m = /translate\(([-\d.]+),([-\d.]+)\)/.exec(cur);
+        var bx = parseFloat(m[1]), by = parseFloat(m[2]);
+        box.style.transition = 'transform 820ms cubic-bezier(.4,0,.2,1), opacity 820ms ease-in';
+        box.setAttribute('transform','translate('+bx+','+(by-58)+') scale(0.6)');
+        box.setAttribute('opacity','0');
+        setT(cable, 820);
+        cable.setAttribute('y2','6');
+        hook.setAttribute('d','M -3 6 q 0 6 3 6 q 3 0 3 -6');
+        return wait(860);
+      });
+    }
+
+    function reappearBox(key, toX, toY){
+      var box = boxEls[key];
+      box.style.transition = 'none';
+      box.setAttribute('transform','translate('+toX+','+(toY+10)+') scale(0.5)');
+      box.setAttribute('opacity','0');
+      return wait(20).then(function(){
+        box.style.transition = 'transform 760ms cubic-bezier(.2,.8,.3,1.1), opacity 760ms ease-out';
+        box.setAttribute('transform','translate('+toX+','+toY+')');
+        box.setAttribute('opacity','1');
+        return wait(780);
+      });
+    }
+
+    function act1Cycle(){
+      setT(trolley,0); trolley.setAttribute('transform','translate(50,20)');
+      setT(cable,0); cable.setAttribute('y2','20');
+      setT(hook,0); hook.setAttribute('d','M -3 20 q 0 6 3 6 q 3 0 3 -6');
+      ['red','green','blue'].forEach(function(k){ boxEls[k].style.transition='none'; boxEls[k].setAttribute('opacity','1'); });
+      boxEls.red.setAttribute('transform','translate(0,54)');
+      boxEls.green.setAttribute('transform','translate(0,66)');
+      boxEls.blue.setAttribute('transform','translate(0,78)');
+
+      return wait(700)
+        .then(function(){ return liftBox('red'); })
+        .then(function(){ return wait(120); })
+        .then(function(){ return liftBox('green'); })
+        .then(function(){ return wait(120); })
+        .then(function(){ return liftBox('blue'); })
+        .then(function(){ return wait(500); })
+        .then(function(){ return reappearBox('blue', 0, 78); })
+        .then(function(){ return reappearBox('green', 0, 66); })
+        .then(function(){ return reappearBox('red', 0, 54); })
+        .then(function(){ return wait(650); });
+    }
+
+    function act2Cycle(){
+      clipRows.forEach(resetRow);
+      orderSheet.style.transition = 'none';
+      orderSheet.setAttribute('opacity','0');
+      orderSheet.setAttribute('transform','translate(50,60) scale(1,0.15)');
+
+      return wait(500).then(function(){
+        // randomize which rows get a mark (and check vs X) fresh every loop
+        var pattern = clipRows.map(function(){ return Math.random() < 0.82; });
+        var chain = Promise.resolve();
+        clipRows.forEach(function(row, i){
+          chain = chain.then(function(){
+            if(pattern[i]){
+              var isCheck = Math.random() < 0.6;
+              return markRow(row, isCheck);
+            }
+            return wait(60);
+          }).then(function(){ return wait(160); });
+        });
+        return chain;
+      }).then(function(){
+        return wait(450);
+      }).then(function(){
+        orderSheet.style.transition = 'transform 520ms cubic-bezier(.3,.6,.3,1), opacity 260ms ease-out';
+        orderSheet.setAttribute('opacity','1');
+        orderSheet.setAttribute('transform','translate(50,84) scale(1,1)');
+        return wait(560);
+      }).then(function(){
+        orderSheet.style.transition = 'transform 680ms cubic-bezier(.4,0,.7,1), opacity 680ms ease-in';
+        orderSheet.setAttribute('transform','translate(50,128) rotate(10) scale(1,1)');
+        orderSheet.setAttribute('opacity','0');
+        return wait(700);
+      }).then(function(){
+        return wait(400);
+      });
+    }
+
+    function crossfade(fromG, toG, ms){
+      fromG.style.transition = 'opacity '+ms+'ms ease';
+      toG.style.transition = 'opacity '+ms+'ms ease';
+      fromG.style.pointerEvents = 'none'; toG.style.pointerEvents = 'none';
+      fromG.setAttribute('opacity','0');
+      toG.setAttribute('opacity','1');
+      return wait(ms+20);
+    }
+
+    function loop(){
+      act2.setAttribute('opacity','0');
+      act1.setAttribute('opacity','1');
+      act1Cycle()
+        .then(function(){ return crossfade(act1, act2, 480); })
+        .then(function(){ return act2Cycle(); })
+        .then(function(){ return crossfade(act2, act1, 480); })
+        .then(loop);
+    }
+    loop();
+  }
+  supplyIconInit();
   function selectQuizAnswer(idx){
     if(state.quiz.answered) return;
     state.quiz.answered = true;
