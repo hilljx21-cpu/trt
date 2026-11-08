@@ -10082,15 +10082,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       return wait(ms+20);
     }
 
-    function loop(){
-      act2.setAttribute('opacity','0');
-      act1.setAttribute('opacity','1');
-      act1Cycle()
-        .then(function(){ return crossfade(act1, act2, 480); })
-        .then(function(){ return act2Cycle(); })
-        .then(function(){ return crossfade(act2, act1, 480); })
-        .then(loop);
-    }
+    // v159: the crane act (act 1) was removed at the user's request — only the checklist + "Order"
+    // act loops now. act1Cycle/crossfade are kept above unused in case it is wanted back.
+    act1.setAttribute('opacity','0');
+    act1.style.display = 'none';
+    act2.style.transition = 'none';
+    act2.setAttribute('opacity','1');
+    function loop(){ act2Cycle().then(loop); }
     loop();
   }
   supplyIconInit();
